@@ -1,0 +1,102 @@
+---
+title: "Wrangling"
+author: "Carter Martindale"
+date: "10/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(lubridate)
+library(janitor)
+```
+
+## SC case centered
+
+```{r case}
+
+case<- read_csv("raw_data/SCDB_2020_01_caseCentered_LegalProvision.csv", col_names = TRUE, cols(
+  caseId = col_character(),
+  docketId = col_character(),
+  caseIssuesId = col_character(),
+  voteId = col_character(),
+  dateDecision = col_character(),
+  decisionType = col_double(),
+  usCite = col_character(),
+  sctCite = col_character(),
+  ledCite = col_character(),
+  lexisCite = col_character(),
+  term = col_double(),
+  naturalCourt = col_double(),
+  chief = col_character(),
+  docket = col_character(),
+  caseName = col_character(),
+  dateArgument = col_character(),
+  dateRearg = col_character(),
+  petitioner = col_double(),
+  petitionerState = col_double(),
+  respondent = col_double(),
+  respondentState = col_double(),
+  jurisdiction = col_double(),
+  adminAction = col_double(),
+  adminActionState = col_double(),
+  threeJudgeFdc = col_double(),
+  caseOrigin = col_double(),
+  caseOriginState = col_double(),
+  caseSource = col_double(),
+  caseSourceState = col_double(),
+  lcDisagreement = col_double(),
+  certReason = col_double(),
+  lcDisposition = col_double(),
+  lcDispositionDirection = col_double(),
+  declarationUncon = col_double(),
+  caseDisposition = col_double(),
+  caseDispositionUnusual = col_double(),
+  partyWinning = col_double(),
+  precedentAlteration = col_double(),
+  voteUnclear = col_double(),
+  issue = col_double(),
+  issueArea = col_double(),
+  decisionDirection = col_double(),
+  decisionDirectionDissent = col_double(),
+  authorityDecision1 = col_double(),
+  authorityDecision2 = col_double(),
+  lawType = col_double(),
+  lawSupp = col_double(),
+  lawMinor = col_character(),
+  majOpinWriter = col_double(),
+  majOpinAssigner = col_double(),
+  splitVote = col_double(),
+  majVotes = col_double(),
+  minVotes = col_double()
+)) %>% 
+  clean_names()
+
+case_reformat <- case %>% 
+  mutate(date_decision_new = mdy(date_decision),
+         date_argument_new = mdy(date_argument),
+         date_rearg_new = mdy(date_rearg))
+
+# Here I created a new date column that would be workable as
+# a date rather than simply a character, and I cleaned up
+# the names. 
+
+summary(case_centered)
+```
+
+```{r plot}
+
+case_reformat %>% 
+  group_by(issue_area) %>% 
+  filter(issue_area %in% c(2, 3, 5)) %>% 
+  ggplot(aes(x = issue_area)) +
+  geom_bar(position = "dodge") +
+  facet_wrap(~decision_direction)
+
+
+```
+

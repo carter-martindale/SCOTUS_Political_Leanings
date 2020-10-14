@@ -1,0 +1,19 @@
+Notes about the Data:
+-ISSUE: See page 46
+The variable codes 260 issues, each of which has an identifying number. They are ordered
+below by their larger issue area: criminal procedure (10010-10600), civil rights
+(20010-20410), First Amendment (30010-30020), due process (40010-40070), privacy
+(50010-50040), attorneys (60010-60040), unions (70010-70210), economic activity
+(80010-80350), judicial power (90010-90520), federalism (100010-100130), interstate
+relation (110010-110030), federal taxation (120010-120040), miscellaneous
+(130010-130020), and private law (140010-140080). These comprise the codes for a
+separate variable, Issue Area, that is described immediately following this one.
+-Issue Area breaks down all of the above things into larger areas already. So Criminal Procedure = 1, civil rights = 2, 1st amend = 3, due process = 4, privacy = 5, attorney/government fees and compensation = 6, unions = 7, economic activity = 8, judicial power = 9, federalism = 10, interstate relation = 11, federal taxation = 12, misc = 13, private laws = 14
+-Specification of direction comports with conventional usage for the most part except for the
+interstate relations, private law, and the miscellaneous issues. "Unspecifiable" has been
+entered either because the issue does not lend itself to a liberal or conservative description
+(e.g., a boundary dispute between two states, real property, wills and estates), or because no
+convention exists as to which is the liberal side and which is the conservative side (e.g., the
+legislative veto). This variable will also contain "unspecifiable" where one state sues another
+under the original jurisdiction of the Supreme Court
+-LIberal = 2, Conservative = 1
