@@ -93,7 +93,7 @@ summary(case_centered)
 case_reformat %>% 
   group_by(issue_area) %>% 
   filter(issue_area %in% c(2, 3, 5)) %>% 
-  ggplot(aes(x = issue_area)) +
+  ggplot(aes(x = issue_area, fill = chief)) +
   geom_bar(position = "dodge") +
   facet_wrap(~decision_direction)
 
