@@ -193,7 +193,7 @@ ui <- navbarPage(
                more on the justices themselves and how they voted on each issue.
                Check out my repo",
                a("here", 
-                 href = "https://github.com/carter-martindale/final_project_test"),
+                 href = "https://github.com/carter-martindale/milestone_4"),
                "to see the rest of my work")))
 
 # Define server logic required to draw a histogram
