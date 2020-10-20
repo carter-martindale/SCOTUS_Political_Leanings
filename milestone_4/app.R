@@ -153,15 +153,15 @@ ui <- navbarPage(
                "so feel free to check ouut that page.
                You can reach me at carter_martindale@college.harvard.edu.")),
     tabPanel("Model",
-             h3("Babysteps"),
-             p("This first model is pretty primitive, but sometimes a coherent
-               plot is produced if you choose the right variables."),
-             fluidPage(
-                 selectInput("x", "X variable", choices = names(d)),
-                 selectInput("y", "Y variable", choices = names(d)),
-                 # selectInput("facet", "Facet By", choices = names(d)),
-                 selectInput("geom", "geom", c("point", "column", "jitter")),
-                 plotOutput("plot")),
+             # h3("Babysteps"),
+             # p("This first model is pretty primitive, but sometimes a coherent
+             #   plot is produced if you choose the right variables."),
+             # fluidPage(
+             #     selectInput("x", "X variable", choices = names(d)),
+             #     selectInput("y", "Y variable", choices = names(d)),
+             #     # selectInput("facet", "Facet By", choices = names(d)),
+             #     selectInput("geom", "geom", c("point", "column", "jitter")),
+             #     plotOutput("plot")),
             h3("Most Commmon..."),
             p("This plot can be used to find out the most common x of 
             SCOTUS- the most common state for a case to come from, the most
@@ -172,6 +172,28 @@ ui <- navbarPage(
                                                             "issue_area",
                                                             "decision_direction")),
                  plotOutput("plot2"))),
+    
+    tabPanel("The Good Stuff",
+            h3("Case Salience"),
+            p("This plot shows trends in the number of cases under each chief
+              by issue area. You can notice some historical trends in the type
+              of cases brought before each court."),
+            fluidPage(
+                sliderInput("a", "Issue Area", min = 1,
+                            max = 14, value = 3)),
+            plotOutput("plot4"),
+            h3("Which Way Did a Court Lean?"),
+            p("This plot gives you the chance to choose a Chief Justice,
+              and see whether the majority of their decisions were liberal,
+              conservative, or somewhere in between"),
+            fluidPage(
+                selectInput("c", "Chief", choices = c("Vinson", "Warren",
+                                                      "Burger", "Rehnquist",
+                                                      "Roberts")),
+                sliderInput("b", "Issue Area", min = 1,
+                            max = 14, value = 3),
+                plotOutput("plot5"))),
+    
     tabPanel("Interesting Findings",
              h3("The Liberal Warren Court"),
              p("So this isn't reactive, but I found this graph very intersesting.
@@ -181,18 +203,13 @@ ui <- navbarPage(
              fluidPage(
                  plotOutput("plot3")
              )),
-    tabPanel("The Good Stuff",
-            h3("What You Really Came For"),
-            p("Hopefully, we can get some gooooood outputs from this graph."),
-            fluidPage(
-                sliderInput("a", "Issue Area", min = 1,
-                            max = 14, value = 3)),
-            plotOutput("plot4")),
+    
     tabPanel("Discussion",
              titlePanel("Discussion Title"),
              p("Eventually I'll include a discussion about my data
                here and the choices I made. For now, can anyone help me with
                working with github and large files?")),
+    
     tabPanel("About", 
              titlePanel("About"),
              h3("Project Background and Motivations"),
@@ -217,19 +234,19 @@ ui <- navbarPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-    plot_geom <- reactive({
-        switch(input$geom,
-               point = geom_point(),
-               #smooth = geom_smooth(se = TRUE, na.rm = TRUE),
-               jitter = geom_jitter(),
-               column = geom_col()
-        )
-    })
-    
-    output$plot <- renderPlot({
-        ggplot(d, aes(.data[[input$x]], .data[[input$y]])) +
-            plot_geom()
-    }, res = 96)
+    # plot_geom <- reactive({
+    #     switch(input$geom,
+    #            point = geom_point(),
+    #            #smooth = geom_smooth(se = TRUE, na.rm = TRUE),
+    #            jitter = geom_jitter(),
+    #            column = geom_col()
+    #     )
+    # })
+    # 
+    # output$plot <- renderPlot({
+    #     ggplot(d, aes(.data[[input$x]], .data[[input$y]])) +
+    #         plot_geom()
+    # }, res = 96)
     
     output$plot2 <- renderPlot({
        ggplot(d, aes(.data[[input$z]])) +
@@ -267,6 +284,20 @@ server <- function(input, output, session) {
                  Federal Taxation = 12,
                  Misc = 13,
                  Private Laws = 14")
+    })
+    
+    output$plot5 <- renderPlot({
+        d %>% 
+            filter(issue_area == input$b,
+                   chief == input$c) %>%
+            ggplot(aes(x = issue_area)) +
+            geom_bar() +
+            facet_wrap(~decision_direction,
+                     labeller = labeller(decision_direction = c(
+                "1" = "Conservative", "2" = "Liberal"))) +
+            labs(title = "Decision Direction by Issue",
+                 x = "Issue Area",
+                 y = "Number of Cases")
     })
     
     output$plot3 <- renderPlot({
