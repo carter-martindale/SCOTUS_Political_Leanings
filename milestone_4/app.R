@@ -7,6 +7,7 @@ library(readr)
 library(lubridate)
 library(janitor)
 library(tibble)
+library(forcats)
 
 d<- read_csv("SCDB_2020_01_caseCentered_LegalProvision.csv",
              col_names = TRUE, cols(
@@ -67,9 +68,8 @@ d<- read_csv("SCDB_2020_01_caseCentered_LegalProvision.csv",
     mutate(date_decision_new = mdy(date_decision),
            date_argument_new = mdy(date_argument),
            date_rearg_new = mdy(date_rearg)) %>% 
-    select(vote_id, date_decision, us_cite, term, chief,
-           case_origin_state, issue, issue_area, decision_direction,
-           maj_opin_writer)
+    select(us_cite, term, chief, case_origin_state, issue,
+           issue_area, jurisdiction, decision_direction)
 
 justice <- read_csv("SCDB_2020_01_justiceCentered_Citation.csv", col_names = TRUE, cols(
     caseId = col_character(),
@@ -133,7 +133,7 @@ justice <- read_csv("SCDB_2020_01_justiceCentered_Citation.csv", col_names = TRU
     majority = col_double(),
     firstAgreement = col_double(),
     secondAgreement = col_double())) %>% 
-    select(voteId, dateDecision, term, chief,
+    select(voteId, term, chief,
            caseOriginState, issue, issueArea,
            decisionDirection, justice, justiceName, vote,
            decisionDirectionDissent, majOpinWriter) %>% 
@@ -153,22 +153,41 @@ ui <- navbarPage(
                "so feel free to check ouut that page.
                You can reach me at carter_martindale@college.harvard.edu.")),
     tabPanel("Model",
-             h3("This first model is pretty primitive, but sometimes a coherent
+             h3("Babysteps"),
+             p("This first model is pretty primitive, but sometimes a coherent
                plot is produced if you choose the right variables."),
              fluidPage(
                  selectInput("x", "X variable", choices = names(d)),
                  selectInput("y", "Y variable", choices = names(d)),
                  # selectInput("facet", "Facet By", choices = names(d)),
                  selectInput("geom", "geom", c("point", "column", "jitter")),
-                 plotOutput("plot"))),
-    tabPanel("Model 2",
-             h3("I'm not really sure what I'm going to do with this
-             second set of data, but it focuses more on individual Justice
-             votes, so I will likely try to focus on individual Justice trends
-             rather than overall court trends."),
-    fluidPage(
-        verbatimTextOutput("table")
-    )),
+                 plotOutput("plot")),
+            h3("Most Commmon..."),
+            p("This plot can be used to find out the most common x of 
+            SCOTUS- the most common state for a case to come from, the most
+            common issue area for a case to fall under, etc."),
+            fluidPage(
+                 selectInput("z", "X Variable", choices = c("case_origin_state",
+                                                            "jurisdiction",
+                                                            "issue_area",
+                                                            "decision_direction")),
+                 plotOutput("plot2"))),
+    tabPanel("Interesting Findings",
+             h3("The Liberal Warren Court"),
+             p("So this isn't reactive, but I found this graph very intersesting.
+                The Warren Court by far has been the most liberal court in the last
+                70 years, but both the Burger and Rehnquist courts seemed to
+                step back from the liberal rulings under Chief Justice Warren"),
+             fluidPage(
+                 plotOutput("plot3")
+             )),
+    tabPanel("The Good Stuff",
+            h3("What You Really Came For"),
+            p("Hopefully, we can get some gooooood outputs from this graph."),
+            fluidPage(
+                sliderInput("a", "Issue Area", min = 1,
+                            max = 14, value = 3)),
+            plotOutput("plot4")),
     tabPanel("Discussion",
              titlePanel("Discussion Title"),
              p("Eventually I'll include a discussion about my data
@@ -212,8 +231,59 @@ server <- function(input, output, session) {
             plot_geom()
     }, res = 96)
     
-    output$table <- renderText({
-        summary(justice)
+    output$plot2 <- renderPlot({
+       ggplot(d, aes(.data[[input$z]])) +
+       geom_bar()
+    })
+
+    output$plot4 <- renderPlot({
+        d %>% 
+            filter(issue_area == input$a) %>% 
+            mutate(chief = fct_relevel(chief,
+                                         "Vinson", "Warren",
+                                         "Burger", "Rehnquist",
+                                         "Roberts")) %>% 
+        ggplot(aes(x = issue_area, fill = chief)) +
+            geom_bar(position = "dodge") +
+            scale_fill_discrete(name = "Chief",
+                                breaks = c("Vinson", "Warren",
+                                           "Burger", "Rehnquist",
+                                           "Roberts")) +
+            labs(title = "Salience of Cases by Issue Area",
+                 x = "Issue Area",
+                 y = "Number of Cases",
+                 caption = "For reference, the Issue Areas are as follows:
+                 Criminal Procedure = 1,
+                 Civil Rights = 2,
+                 1st Amendment = 3,
+                 Due Process = 4,
+                 Privacy = 5,
+                 Attorney/Government Fees and Compensation = 6,
+                 Unions = 7,
+                 Economic Activity = 8,
+                 Judicial Power = 9,
+                 Federalism = 10,
+                 Interstate Relations = 11,
+                 Federal Taxation = 12,
+                 Misc = 13,
+                 Private Laws = 14")
+    })
+    
+    output$plot3 <- renderPlot({
+        d %>%
+            filter(decision_direction %in% c(1, 2)) %>% 
+        ggplot(aes(x = term, fill = chief)) +
+        geom_bar(position = "dodge") +
+        facet_wrap(~decision_direction,
+                   labeller = labeller(decision_direction = c(
+                       "1" = "Conservative", "2" = "Liberal"))) +
+        scale_fill_discrete(name = "Chief",
+                            breaks = c("Vinson", "Warren",
+                                       "Burger", "Rehnquist",
+                                       "Roberts")) +
+        labs(title = "Direction of SCOTUS Rulings",
+             x = "Term",
+             y = "Number of Rulings")
     })
 }
 # Run the application 

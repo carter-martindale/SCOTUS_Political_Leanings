@@ -97,6 +97,24 @@ case_reformat %>%
   geom_bar(position = "dodge") +
   facet_wrap(~decision_direction)
 
+case_reformat %>% 
+  ggplot(aes(x = issue_area, fill = chief)) +
+  geom_bar(position = "dodge")
+
+ plot3 <- case_reformat %>% 
+  filter(decision_direction %in% c(1, 2)) %>% 
+  ggplot(aes(x = term, fill = chief)) +
+  geom_bar(position = "dodge") +
+  facet_wrap(~decision_direction,
+             labeller = labeller(decision_direction = c(
+               "1" = "Conservative", "2" = "Liberal"))) +
+  scale_fill_discrete(name = "Chief",
+                      breaks = c("Vinson", "Warren",
+                                 "Burger", "Rehnquist",
+                                 "Roberts")) +
+  labs(title = "Direction of SCOTUS Rulings",
+       x = "Term",
+       y = "Number of Rulings")
 
 ```
 
@@ -172,4 +190,9 @@ justice <- read_csv("raw_data/SCDB_2020_01_justiceCentered_Citation.csv", col_na
 
 summary(justice)
 
+
+case_reformat %>% 
+        filter(issue_area == 3) %>% 
+        ggplot(aes(x = issue_area, fill = chief)) +
+            geom_bar(position = "dodge")
 ```
