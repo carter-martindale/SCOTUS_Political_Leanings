@@ -8,6 +8,7 @@ library(lubridate)
 library(janitor)
 library(tibble)
 library(forcats)
+library(rstanarm)
 
 d<- read_csv("SCDB_2020_01_caseCentered_LegalProvision.csv",
              col_names = TRUE, cols(
@@ -134,10 +135,40 @@ justice <- read_csv("SCDB_2020_01_justiceCentered_Citation.csv", col_names = TRU
     firstAgreement = col_double(),
     secondAgreement = col_double())) %>% 
     select(voteId, term, chief,
-           caseOriginState, issue, issueArea,
-           decisionDirection, justice, justiceName, vote,
-           decisionDirectionDissent, majOpinWriter) %>% 
+           caseOriginState, issueArea,
+           decisionDirection, direction, justice, justiceName, vote,
+           decisionDirectionDissent) %>% 
     clean_names()
+
+d$issue_area[which(d$issue_area == 1)] <- "Criminal Procedure"
+d$issue_area[which(d$issue_area == 2)] <- "Civil Rights"
+d$issue_area[which(d$issue_area == 3)] <- "1st Amendment"
+d$issue_area[which(d$issue_area == 4)] <- "Due Process"
+d$issue_area[which(d$issue_area == 5)] <- "Privacy"
+d$issue_area[which(d$issue_area == 6)] <- "Attorney/Government Fees and Compensation"
+d$issue_area[which(d$issue_area == 7)] <- "Unions"
+d$issue_area[which(d$issue_area == 8)] <- "Economic Activity"
+d$issue_area[which(d$issue_area == 9)] <- "Judicial Power"
+d$issue_area[which(d$issue_area == 10)] <- "Federalism"
+d$issue_area[which(d$issue_area == 11)] <- "Interstate Relations"
+d$issue_area[which(d$issue_area == 12)] <- "Federal Taxation"
+d$issue_area[which(d$issue_area == 13)] <- "Misc"
+d$issue_area[which(d$issue_area == 14)] <- "Private Laws"
+
+justice$issue_area[which(justice$issue_area == 1)] <- "Criminal Procedure"
+justice$issue_area[which(justice$issue_area == 2)] <- "Civil Rights"
+justice$issue_area[which(justice$issue_area == 3)] <- "1st Amendment"
+justice$issue_area[which(justice$issue_area == 4)] <- "Due Process"
+justice$issue_area[which(justice$issue_area == 5)] <- "Privacy"
+justice$issue_area[which(justice$issue_area == 6)] <- "Attorney/Government Fees and Compensation"
+justice$issue_area[which(justice$issue_area == 7)] <- "Unions"
+justice$issue_area[which(justice$issue_area == 8)] <- "Economic Activity"
+justice$issue_area[which(justice$issue_area == 9)] <- "Judicial Power"
+justice$issue_area[which(justice$issue_area == 10)] <- "Federalism"
+justice$issue_area[which(justice$issue_area == 11)] <- "Interstate Relations"
+justice$issue_area[which(justice$issue_area == 12)] <- "Federal Taxation"
+justice$issue_area[which(justice$issue_area == 13)] <- "Misc"
+justice$issue_area[which(justice$issue_area == 14)] <- "Private Laws"
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
@@ -150,18 +181,28 @@ ui <- navbarPage(
                sophomore at Harvard. I'm also a student coordinator for",
                a("HFAI,", 
                  href = "https://college.harvard.edu/carter-martindale"),
-               "so feel free to check ouut that page.
+               "so feel free to check out that page.
                You can reach me at carter_martindale@college.harvard.edu.")),
     tabPanel("Model",
-             # h3("Babysteps"),
-             # p("This first model is pretty primitive, but sometimes a coherent
-             #   plot is produced if you choose the right variables."),
-             # fluidPage(
-             #     selectInput("x", "X variable", choices = names(d)),
-             #     selectInput("y", "Y variable", choices = names(d)),
-             #     # selectInput("facet", "Facet By", choices = names(d)),
-             #     selectInput("geom", "geom", c("point", "column", "jitter")),
-             #     plotOutput("plot")),
+            h3("Let's talk about the Justices..."),
+            p("Here come the big guns, the super cool analysis, the knock
+              your socks off models. We're going to try to predict which way
+              a Justice will vote (Conservative or Liberal) on a certain issue
+              of your choice. I've preselected justices who are currently
+              alive and who have been on the court for at least 10 years."),
+            p("This may take a few seconds to create the plot once you choose an
+              issue area."),
+            fluidPage(
+                selectInput("I", "Issue Area",
+                            choices = c("Criminal Procedure", "Civil Rights",
+                                        "1st Amendment", "Due Process",
+                                        "Privacy", "Attorney/Government Fees and Compensation",
+                                        "Unions", "Economic Activity",
+                                       "Judicial Power", "Federalism", "Interstate Relations",
+                                       "Federal Taxation", "Misc", "Private Laws"
+                )),
+                plotOutput("plot_regress"))),
+     tabPanel("SCOTUS Over the Years",
             h3("Most Commmon..."),
             p("This plot can be used to find out the most common x of 
             SCOTUS- the most common state for a case to come from, the most
@@ -179,36 +220,50 @@ ui <- navbarPage(
               by issue area. You can notice some historical trends in the type
               of cases brought before each court."),
             fluidPage(
-                sliderInput("a", "Issue Area", min = 1,
-                            max = 14, value = 3)),
+                selectInput("a", "Issue Area",
+                            choices = c("Criminal Procedure", "Civil Rights",
+                    "1st Amendment", "Due Process",
+                    "Privacy", "Attorney/Government Fees and Compensation",
+                    "Unions", "Economic Activity",
+                    "Judicial Power", "Federalism", "Interstate Relations",
+                    "Federal Taxation", "Misc", "Private Laws"
+                    )),
             plotOutput("plot4"),
+            
             h3("Which Way Did a Court Lean?"),
             p("This plot gives you the chance to choose a Chief Justice,
               and see whether the majority of their decisions were liberal,
-              conservative, or somewhere in between"),
+              conservative, or somewhere in between")),
             fluidPage(
                 selectInput("c", "Chief", choices = c("Vinson", "Warren",
                                                       "Burger", "Rehnquist",
                                                       "Roberts")),
-                sliderInput("b", "Issue Area", min = 1,
-                            max = 14, value = 3),
+                selectInput("b", "Issue Area",
+                            choices = c("Criminal Procedure", "Civil Rights",
+                                        "1st Amendment", "Due Process",
+                                        "Privacy", "Attorney/Government Fees and Compensation",
+                                        "Unions", "Economic Activity",
+                                        "Judicial Power", "Federalism", "Interstate Relations",
+                                        "Federal Taxation", "Misc", "Private Laws"
+                    )),
                 plotOutput("plot5"))),
     
     tabPanel("Interesting Findings",
              h3("The Liberal Warren Court"),
-             p("So this isn't reactive, but I found this graph very intersesting.
+             p("I found this graph very intersesting.
                 The Warren Court by far has been the most liberal court in the last
                 70 years, but both the Burger and Rehnquist courts seemed to
-                step back from the liberal rulings under Chief Justice Warren"),
+                step back from the liberal rulings under Chief Justice Warren."),
              fluidPage(
                  plotOutput("plot3")
              )),
     
     tabPanel("Discussion",
-             titlePanel("Discussion Title"),
+             titlePanel("What I Don Did"),
              p("Eventually I'll include a discussion about my data
-               here and the choices I made. For now, can anyone help me with
-               working with github and large files?")),
+               here and the choices I made. I should probably start that
+               pretty soon. For now, can anyone help me make a subtitle
+               of a plot reactive? Can't quite figure out how to do that")),
     
     tabPanel("About", 
              titlePanel("About"),
@@ -223,9 +278,8 @@ ui <- navbarPage(
                The first is from the Supreme Court Data Project and contains
                a fairly comprehensive list of all Supreme Court decisions from
                the Vinson Court until 2019. This dataset focused primarily on
-               the legal issue presented in each case. The second dataset is from a
-               project called SCOTUS opinions. This dataset also includes
-               a list of Supreme Court Decisions, however this dataset focuses
+               the legal issue presented in each case. The second dataset is also from
+               The Supreme Court Data Project. This dataset, however, focuses
                more on the justices themselves and how they voted on each issue.
                Check out my repo",
                a("here", 
@@ -234,28 +288,41 @@ ui <- navbarPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-    # plot_geom <- reactive({
-    #     switch(input$geom,
-    #            point = geom_point(),
-    #            #smooth = geom_smooth(se = TRUE, na.rm = TRUE),
-    #            jitter = geom_jitter(),
-    #            column = geom_col()
-    #     )
-    # })
-    # 
-    # output$plot <- renderPlot({
-    #     ggplot(d, aes(.data[[input$x]], .data[[input$y]])) +
-    #         plot_geom()
-    # }, res = 96)
     
     output$plot2 <- renderPlot({
        ggplot(d, aes(.data[[input$z]])) +
-       geom_bar()
+       geom_bar() + 
+            labs(y = "Count",
+                 title = "Summmary of Various Topics in the Supreme Court since 1954",
+                 x = case_when(
+                     input$z == "case_origin_state" ~ "Case Origin State",
+                     input$z == "jurisdiction" ~ "Jurisdiction",
+                     input$z == "issue_area" ~ "Issue Area",
+                     input$z == "decision_direction" ~ "Decision Direction")) +
+            theme_classic()
+    })
+    
+    output$plot3 <- renderPlot({
+        d %>%
+            filter(decision_direction %in% c(1, 2)) %>%
+            ggplot(aes(x = term, fill = chief)) +
+            geom_bar(position = "dodge") +
+            facet_wrap(~decision_direction,
+                       labeller = labeller(decision_direction = c(
+                           "1" = "Conservative", "2" = "Liberal"))) +
+            scale_fill_discrete(name = "Chief",
+                                breaks = c("Vinson", "Warren",
+                                           "Burger", "Rehnquist",
+                                           "Roberts")) +
+            labs(title = "Direction of SCOTUS Rulings",
+                 x = "Term",
+                 y = "Number of Rulings")
     })
 
     output$plot4 <- renderPlot({
         d %>% 
             filter(issue_area == input$a) %>% 
+                       # str_sub(input$a, 1, 1)) %>% 
             mutate(chief = fct_relevel(chief,
                                          "Vinson", "Warren",
                                          "Burger", "Rehnquist",
@@ -268,22 +335,7 @@ server <- function(input, output, session) {
                                            "Roberts")) +
             labs(title = "Salience of Cases by Issue Area",
                  x = "Issue Area",
-                 y = "Number of Cases",
-                 caption = "For reference, the Issue Areas are as follows:
-                 Criminal Procedure = 1,
-                 Civil Rights = 2,
-                 1st Amendment = 3,
-                 Due Process = 4,
-                 Privacy = 5,
-                 Attorney/Government Fees and Compensation = 6,
-                 Unions = 7,
-                 Economic Activity = 8,
-                 Judicial Power = 9,
-                 Federalism = 10,
-                 Interstate Relations = 11,
-                 Federal Taxation = 12,
-                 Misc = 13,
-                 Private Laws = 14")
+                 y = "Number of Cases")
     })
     
     output$plot5 <- renderPlot({
@@ -291,7 +343,7 @@ server <- function(input, output, session) {
             filter(issue_area == input$b,
                    chief == input$c) %>%
             ggplot(aes(x = issue_area)) +
-            geom_bar() +
+            geom_bar(fill = "blue") +
             facet_wrap(~decision_direction,
                      labeller = labeller(decision_direction = c(
                 "1" = "Conservative", "2" = "Liberal"))) +
@@ -300,21 +352,39 @@ server <- function(input, output, session) {
                  y = "Number of Cases")
     })
     
-    output$plot3 <- renderPlot({
-        d %>%
-            filter(decision_direction %in% c(1, 2)) %>% 
-        ggplot(aes(x = term, fill = chief)) +
-        geom_bar(position = "dodge") +
-        facet_wrap(~decision_direction,
-                   labeller = labeller(decision_direction = c(
-                       "1" = "Conservative", "2" = "Liberal"))) +
-        scale_fill_discrete(name = "Chief",
-                            breaks = c("Vinson", "Warren",
-                                       "Burger", "Rehnquist",
-                                       "Roberts")) +
-        labs(title = "Direction of SCOTUS Rulings",
-             x = "Term",
-             y = "Number of Rulings")
+    output$plot_regress <- renderPlot ({
+        fit <- justice %>% 
+            filter(justice_name %in% c("JGRoberts", "CThomas",
+                                       "SGBreyer", "SAAlito",
+                                       "SSotomayor"),
+                   issue_area == input$I)
+        fit_obj <- stan_glm(data = fit,
+                 direction ~ justice_name - 1,
+                 refresh = 0)
+        fit_obj %>% 
+            as_tibble() %>% 
+            select(-sigma) %>% 
+            rename(Roberts = justice_nameJGRoberts, Thomas = justice_nameCThomas,
+                   Breyer = justice_nameSGBreyer, Alito = justice_nameSAAlito,
+                   Sotomayor = justice_nameSSotomayor) %>%
+            pivot_longer(cols = Thomas:Sotomayor,
+                         names_to = "justice",
+                         values_to = "vote_direction") %>% 
+            ggplot(aes(x = vote_direction)) +
+            geom_histogram(aes(y = after_stat(count/sum(count)),
+                               fill = justice),
+                           alpha = 0.5, 
+                           bins = 100, 
+                           position = "identity") +
+            labs(title = "Posterior Probability Distribution",
+                 subtitle = "Average Vote Direction on ____",
+                 x = "Vote Direction",
+                 y = "Probability",
+                 caption = "Data falling within 1 and 1.5 indicate an instance
+                 in which that justice would cast a Conservative vote.
+                 Data in between 1.5 and 2 represent a Liberal vote") +
+            scale_y_continuous(labels = scales::percent_format()) +
+            theme_classic()
     })
 }
 # Run the application 
