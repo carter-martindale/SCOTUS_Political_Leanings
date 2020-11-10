@@ -185,7 +185,7 @@ justice <- read_csv("raw_data/SCDB_2020_01_justiceCentered_Citation.csv", col_na
   select(voteId, dateDecision, term, chief,
          caseOriginState, issue, issueArea,
          decisionDirection, justice, justiceName, vote,
-         decisionDirectionDissent, majOpinWriter) %>% 
+         decisionDirectionDissent, majOpinWriter, direction) %>% 
   clean_names()
 
 summary(justice)
@@ -196,3 +196,35 @@ case_reformat %>%
         ggplot(aes(x = issue_area, fill = chief)) +
             geom_bar(position = "dodge")
 ```
+
+1 cert
+2 appeal
+3 bail
+4 certification
+5 docketing fee
+6 rehearing or restored to calendar for reargument
+7 injunction
+8 mandamus
+9 original
+10 prohibition
+12 stay
+13 writ of error
+14 writ of habeas corpus
+15 unspecified, other
+```{r}
+d$jurisdiction[which(d$jurisdiction == 1)] <- "cert"
+d$jurisdiction[which(d$jurisdiction == 2)] <- "appeal"
+d$jurisdiction[which(d$jurisdiction == 3)] <- "bail"
+d$jurisdiction[which(d$jurisdiction == 4)] <- "certification"
+d$jurisdiction[which(d$jurisdiction == 5)] <- "docketing fee"
+d$jurisdiction[which(d$jurisdiction == 6)] <- "rehearsing or restored to calendar for reargument"
+d$jurisdiction[which(d$jurisdiction == 7)] <- "injunction"
+d$jurisdiction[which(d$jurisdiction == 8)] <- "mandamus"
+d$jurisdiction[which(d$jurisdiction == 9)] <- "original"
+d$jurisdiction[which(d$jurisdiction == 10)] <- "prohibition"
+d$jurisdiction[which(d$jurisdiction == 12)] <- "stay"
+d$jurisdiction[which(d$jurisdiction == 13)] <- "writ of error"
+d$jurisdiction[which(d$jurisdiction == 14)] <- "writ of habeus corpus"
+d$jurisdiction[which(d$jurisdiction == 15)] <- "unspecified"
+```
+

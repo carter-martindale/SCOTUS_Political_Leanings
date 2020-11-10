@@ -89,3 +89,44 @@ fit_obj <- stan_glm(data = fit,
                     refresh = 0)
 checking <- fit_obj %>% 
   as_tibble()
+
+
+fit <- justice %>% 
+  filter(justice_name %in% c("JGRoberts", "CThomas",
+                             "SGBreyer", "SAAlito",
+                             "SSotomayor")) %>% 
+  drop_na(direction)
+fit_obj <- stan_glm(data = fit,
+                    direction ~ justice_name - 1,
+                    refresh = 0)
+
+rmse_1 <- tibble(reality = fit$direction,
+                 guess = predict(fit_obj)) %>% 
+  mutate(sq_dif = (guess - reality)^2) %>% 
+  summarise(rmse = sqrt(mean(sq_dif)))
+
+justice_privacy <- justice %>% 
+  filter(justice_name %in% c("JGRoberts", "CThomas",
+                                    "SGBreyer", "SAAlito",
+                                    "SSotomayor"),
+         issue_area == 3) %>% 
+  select(justice_name, issue_area, direction) %>% 
+  drop_na(direction)
+
+justice_filtered <- justice %>% 
+  filter(justice_name %in% c("JGRoberts", "CThomas",
+                             "SGBreyer", "SAAlito",
+                             "SSotomayor")) %>% 
+  drop_na(direction) %>% 
+  select(justice_name, issue_area, direction)
+
+set.seed(10)
+p_fit_1 <- stan_glm(data = justice_privacy,
+         direction ~ justice_name - 1,
+         refresh = 0)
+
+p_fit_2 <- stan_glm(data = justice_filtered,
+                    direction ~ justice_name + issue_area - 1,
+                    refresh = 0)
+print(p_fit_1, digits = 4)
+print(p_fit_2, digits = 4)

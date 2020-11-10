@@ -17,3 +17,19 @@ convention exists as to which is the liberal side and which is the conservative 
 legislative veto). This variable will also contain "unspecifiable" where one state sues another
 under the original jurisdiction of the Supreme Court
 -LIberal = 2, Conservative = 1
+
+Jurisdiction:
+1 cert
+2 appeal
+3 bail
+4 certification
+5 docketing fee
+6 rehearing or restored to calendar for reargument
+7 injunction
+8 mandamus
+9 original
+10 prohibition
+12 stay
+13 writ of error
+14 writ of habeas corpus
+15 unspecified, other

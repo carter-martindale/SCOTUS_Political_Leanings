@@ -1,1 +1,3 @@
-# final_project_test
+# SCOTUS_Political_Leanings
+
+This is the working draft for my final project in Gov 50! Essentially, I am trying to visualize the political leanings of various courts over the years, and even predict how certain justices will vote on certain issues. The Working Notes.R and Wrangling.rmd are fairly messy for now, but that is where I am doing all of my "dirty-work". All of my datasets can be found in raw_data, and the code for my shinyapp can be found in "working_app". Important information regarding different variables can be found in "Variable Notes". 

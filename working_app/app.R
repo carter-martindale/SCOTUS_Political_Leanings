@@ -170,6 +170,21 @@ justice$issue_area[which(justice$issue_area == 12)] <- "Federal Taxation"
 justice$issue_area[which(justice$issue_area == 13)] <- "Misc"
 justice$issue_area[which(justice$issue_area == 14)] <- "Private Laws"
 
+d$jurisdiction[which(d$jurisdiction == 1)] <- "cert"
+d$jurisdiction[which(d$jurisdiction == 2)] <- "appeal"
+d$jurisdiction[which(d$jurisdiction == 3)] <- "bail"
+d$jurisdiction[which(d$jurisdiction == 4)] <- "certification"
+d$jurisdiction[which(d$jurisdiction == 5)] <- "docketing fee"
+d$jurisdiction[which(d$jurisdiction == 6)] <- "rehearsing or restored to calendar for reargument"
+d$jurisdiction[which(d$jurisdiction == 7)] <- "injunction"
+d$jurisdiction[which(d$jurisdiction == 8)] <- "mandamus"
+d$jurisdiction[which(d$jurisdiction == 9)] <- "original"
+d$jurisdiction[which(d$jurisdiction == 10)] <- "prohibition"
+d$jurisdiction[which(d$jurisdiction == 12)] <- "stay"
+d$jurisdiction[which(d$jurisdiction == 13)] <- "writ of error"
+d$jurisdiction[which(d$jurisdiction == 14)] <- "writ of habeus corpus"
+d$jurisdiction[which(d$jurisdiction == 15)] <- "unspecified"
+
 # Define UI for application that draws a histogram
 ui <- navbarPage(
     "Supreme Court Over the Years",
@@ -207,6 +222,9 @@ ui <- navbarPage(
             p("This plot can be used to find out the most common x of 
             SCOTUS- the most common state for a case to come from, the most
             common issue area for a case to fall under, etc."),
+            p("Honestly I am probably going to delete this section since it 
+              isn't really doing much and will just take a lot of time to 
+              keep cleaning it up."),
             fluidPage(
                  selectInput("z", "X Variable", choices = c("case_origin_state",
                                                             "jurisdiction",
@@ -290,7 +308,9 @@ ui <- navbarPage(
 server <- function(input, output, session) {
     
     output$plot2 <- renderPlot({
-       ggplot(d, aes(.data[[input$z]])) +
+       d %>% 
+            drop_na(input$z) %>% 
+        ggplot(aes(.data[[input$z]])) +
        geom_bar() + 
             labs(y = "Count",
                  title = "Summmary of Various Topics in the Supreme Court since 1954",
@@ -299,7 +319,10 @@ server <- function(input, output, session) {
                      input$z == "jurisdiction" ~ "Jurisdiction",
                      input$z == "issue_area" ~ "Issue Area",
                      input$z == "decision_direction" ~ "Decision Direction")) +
-            theme_classic()
+            theme_classic() +
+            theme(axis.text.x = element_text(angle = 45,
+                                             size = 8,
+                                             color = "salmon"))
     })
     
     output$plot3 <- renderPlot({
@@ -375,7 +398,10 @@ server <- function(input, output, session) {
                                fill = justice),
                            alpha = 0.5, 
                            bins = 100, 
-                           position = "identity") +
+                           position = "identity",
+                           color = "white") +
+            geom_vline(xintercept = 1.5, lty = 2,
+                       color = "red") +
             labs(title = "Posterior Probability Distribution",
                  subtitle = "Average Vote Direction on ____",
                  x = "Vote Direction",
