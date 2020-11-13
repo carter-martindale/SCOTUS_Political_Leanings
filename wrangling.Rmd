@@ -229,11 +229,6 @@ d$jurisdiction[which(d$jurisdiction == 15)] <- "unspecified"
 ```
 ## Reading in petition data
 ```{r}
-jb_b2_0930_2019 <- read_excel("raw_data/jb_b2_0930.2019.xlsx")
-p_2019 <- jb_b2_0930_2019 %>% 
-  drop_na() %>% 
-  clean_names()
-
 read_petition_total <- function(x) {
   y <- read_excel(x, skip = 1) %>% 
     drop_na() %>% 
@@ -241,15 +236,15 @@ read_petition_total <- function(x) {
     rename("granted" = "terminated",
            "denied" = "x5",
            "dismissed" = "x6")
-  y[2:5,]
+  y[2:5, c(1, 3:6)]
 }
 
+p_2019 <- read_petition_total("raw_data/jb_b2_0930.2019.xlsx")
 p_2018 <- read_petition_total("raw_data/jb_b2_0930.2018.xlsx")
 p_2017 <- read_petition_total("raw_data/jb_b2_0930.2017.xlsx")
 
-test_2019 <- p_2019 %>% 
-  filter(circuit == "All") %>% 
-  filter(nature_of_proceeding != "All Total")
+test <- rbind(p_2019, p_2018, p_2017) %>% 
+  group_by(circuit_and_nature_of_proceeding)
 
 ```
 
