@@ -1,10 +1,42 @@
-d$lib <- 0
-d$lib[which(d$decision_direction == 1)] <- 1 
-stan_glm(lib ~ chief + term,
-         data = d,
+
+test$lib <- 0
+test$lib[which(test$direction == 1)] <- 1
+# 1 is a conservative vote, 0 liberal
+binom <- stan_glm(lib ~ justice_name + chief + term +I(term^2),
+         data = test,
          refresh = 0,
          family = binomial())
-d$test <- "ya mum"
+print(binom, digits = 3)
+
+tree <- rpart(lib ~ justice_name + chief + term,
+              data = test,
+              cp = .01)
+
+rpart.plot(tree, type = 2)
+
+
+plot(test$term, test$lib)
+
+binom %>% 
+  as_tibble() %>% 
+  rename(Warren = justice_nameEWarren, Vinson = justice_nameFMVinson,
+         Black = justice_nameHLBlack, Douglas = justice_nameWODouglas) %>%
+  pivot_longer(cols = Warren:Douglas,
+               names_to = "justice",
+               values_to = "lib_direction") %>% 
+  ggplot(aes(x = lib_direction)) +
+  geom_histogram(aes(y = after_stat(count/sum(count)),
+                     fill = justice),
+                 alpha = 0.5, 
+                 bins = 100, 
+                 position = "identity") +
+  labs(title = "Posterior Probability Distribution",
+       subtitle = "Average lib Direction for Four Justices on Issues of the 1st Amendment",
+       x = "Lib Direction",
+       y = "Probability") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  theme_classic()
+
 d$issue_area[which(d$issue_area == 1)] <- "Criminal Procedure"
 d$issue_area[which(d$issue_area == 2)] <- "Civil Rights"
 d$issue_area[which(d$issue_area == 3)] <- "1st Amendment"
@@ -22,11 +54,10 @@ d$issue_area[which(d$issue_area == 14)] <- "Private Laws"
 d$issue_area
 
 justice_2 <- justice %>%
-  select(voteId, term, chief,
-         caseOriginState, issue, issueArea,
-         decisionDirection, justice, justiceName, vote,
-         decisionDirectionDissent, majOpinWriter, direction) %>% 
-  clean_names()
+  select(term, chief,
+         issue, issue_area,
+         decision_direction, justice, justice_name, vote,
+         decision_direction_dissent, maj_opin_writer, direction)
 
 justice_2$issue_area[which(justice_2$issue_area == 1)] <- "Criminal Procedure"
 justice_2$issue_area[which(justice_2$issue_area == 2)] <- "Civil Rights"
@@ -47,6 +78,7 @@ test <- justice_2 %>%
   filter(justice_name %in% c("HLBlack", "WODouglas", "FMVinson",
                              "EWarren"),
          issue_area == "1st Amendment") %>% 
+  filter(direction %in% c(1, 2))
   
          
 fit <- stan_glm(data = test,

@@ -13,13 +13,14 @@ library(ggplot2)
 library(readr)
 library(lubridate)
 library(janitor)
+library(rstanarm)
 ```
 
 ## SC case centered
 
 ```{r case}
 
-case<- read_csv("raw_data/SCDB_2020_01_caseCentered_LegalProvision.csv", col_names = TRUE, cols(
+d<- read_csv("raw_data/SCDB_2020_01_caseCentered_LegalProvision.csv", col_names = TRUE, cols(
   caseId = col_character(),
   docketId = col_character(),
   caseIssuesId = col_character(),
@@ -76,7 +77,7 @@ case<- read_csv("raw_data/SCDB_2020_01_caseCentered_LegalProvision.csv", col_nam
 )) %>% 
   clean_names()
 
-case_reformat <- case %>% 
+d_reformat <- d %>% 
   mutate(date_decision_new = mdy(date_decision),
          date_argument_new = mdy(date_argument),
          date_rearg_new = mdy(date_rearg))
@@ -85,23 +86,22 @@ case_reformat <- case %>%
 # a date rather than simply a character, and I cleaned up
 # the names. 
 
-summary(case_centered)
 ```
 
 ```{r plot}
 
-case_reformat %>% 
+d_reformat %>% 
   group_by(issue_area) %>% 
   filter(issue_area %in% c(2, 3, 5)) %>% 
   ggplot(aes(x = issue_area, fill = chief)) +
   geom_bar(position = "dodge") +
   facet_wrap(~decision_direction)
 
-case_reformat %>% 
+d_reformat %>% 
   ggplot(aes(x = issue_area, fill = chief)) +
   geom_bar(position = "dodge")
 
- plot3 <- case_reformat %>% 
+ plot3 <- d_reformat %>% 
   filter(decision_direction %in% c(1, 2)) %>% 
   ggplot(aes(x = term, fill = chief)) +
   geom_bar(position = "dodge") +
@@ -226,5 +226,30 @@ d$jurisdiction[which(d$jurisdiction == 12)] <- "stay"
 d$jurisdiction[which(d$jurisdiction == 13)] <- "writ of error"
 d$jurisdiction[which(d$jurisdiction == 14)] <- "writ of habeus corpus"
 d$jurisdiction[which(d$jurisdiction == 15)] <- "unspecified"
+```
+## Reading in petition data
+```{r}
+jb_b2_0930_2019 <- read_excel("raw_data/jb_b2_0930.2019.xlsx")
+p_2019 <- jb_b2_0930_2019 %>% 
+  drop_na() %>% 
+  clean_names()
+
+read_petition_total <- function(x) {
+  y <- read_excel(x, skip = 1) %>% 
+    drop_na() %>% 
+    clean_names() %>% 
+    rename("granted" = "terminated",
+           "denied" = "x5",
+           "dismissed" = "x6")
+  y[2:5,]
+}
+
+p_2018 <- read_petition_total("raw_data/jb_b2_0930.2018.xlsx")
+p_2017 <- read_petition_total("raw_data/jb_b2_0930.2017.xlsx")
+
+test_2019 <- p_2019 %>% 
+  filter(circuit == "All") %>% 
+  filter(nature_of_proceeding != "All Total")
+
 ```
 

@@ -386,7 +386,6 @@ server <- function(input, output, session) {
                  refresh = 0)
         fit_obj %>% 
             as_tibble() %>% 
-            select(-sigma) %>% 
             rename(Roberts = justice_nameJGRoberts, Thomas = justice_nameCThomas,
                    Breyer = justice_nameSGBreyer, Alito = justice_nameSAAlito,
                    Sotomayor = justice_nameSSotomayor) %>%
