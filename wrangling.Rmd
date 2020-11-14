@@ -14,6 +14,7 @@ library(readr)
 library(lubridate)
 library(janitor)
 library(rstanarm)
+library(readxl)
 ```
 
 ## SC case centered
@@ -186,7 +187,10 @@ justice <- read_csv("raw_data/SCDB_2020_01_justiceCentered_Citation.csv", col_na
          caseOriginState, issue, issueArea,
          decisionDirection, justice, justiceName, vote,
          decisionDirectionDissent, majOpinWriter, direction) %>% 
-  clean_names()
+  clean_names() %>% 
+  drop_na(direction)
+
+justice$direction[which(justice$direction == 2)] <- 0
 
 summary(justice)
 
@@ -195,6 +199,16 @@ case_reformat %>%
         filter(issue_area == 3) %>% 
         ggplot(aes(x = issue_area, fill = chief)) +
             geom_bar(position = "dodge")
+
+fit <- justice %>% 
+            filter(justice_name %in% c("JGRoberts", "CThomas",
+                                       "SGBreyer", "SAAlito",
+                                       "SSotomayor"),
+                   issue_area == 3)
+
+stan_glm(direction ~ justice_name - 1,
+         data = fit,
+         refresh =)
 ```
 
 1 cert
@@ -229,22 +243,59 @@ d$jurisdiction[which(d$jurisdiction == 15)] <- "unspecified"
 ```
 ## Reading in petition data
 ```{r}
-read_petition_total <- function(x) {
-  y <- read_excel(x, skip = 1) %>% 
+read_petition_total <- function(x, y) {
+  z <- read_excel(x, skip = 1) %>% 
     drop_na() %>% 
     clean_names() %>% 
     rename("granted" = "terminated",
            "denied" = "x5",
-           "dismissed" = "x6")
-  y[2:5, c(1, 3:6)]
+           "dismissed" = "x6") %>% 
+    mutate(year = y)
+  z[2:5, c(1, 3:6, 8)]
+}
+read_p_total <- function(x, y) {
+  z <- read_excel(x, skip = 9) %>% 
+    drop_na() %>% 
+    clean_names() %>% 
+    rename("circuit_and_nature_of_proceeding" = "of_proceeding") %>% 
+    mutate(year = y)
+  z[2:5, c(1, 3:6, 8)]
 }
 
-p_2019 <- read_petition_total("raw_data/jb_b2_0930.2019.xlsx")
-p_2018 <- read_petition_total("raw_data/jb_b2_0930.2018.xlsx")
-p_2017 <- read_petition_total("raw_data/jb_b2_0930.2017.xlsx")
+read_annoyed <- function(x, y) {
+  z <- read_excel(x, skip = 11) %>% 
+    drop_na() %>% 
+    clean_names() %>% 
+    rename("circuit_and_nature_of_proceeding" = "of_proceeding") %>% 
+    mutate(year = y)
+  z[2:5, c(1, 3:6, 8)]
+}
 
-test <- rbind(p_2019, p_2018, p_2017) %>% 
-  group_by(circuit_and_nature_of_proceeding)
+p_2019 <- read_petition_total("raw_data/jb_b2_0930.2019.xlsx", 2019)
+p_2018 <- read_petition_total("raw_data/jb_b2_0930.2018.xlsx", 2018)
+p_2017 <- read_petition_total("raw_data/jb_b2_0930.2017.xlsx", 2017)
+p_2016 <- read_petition_total("raw_data/jb_b2_0930.2016.xlsx", 2016)
+p_2015 <- read_p_total("raw_data/B02Sep15.xlsx", 2015)
+p_2014 <- read_p_total("raw_data/B02Sep14.xlsx", 2014)
+p_2013 <- read_p_total("raw_data/B02Sep13.xlsx", 2013)
+p_2012 <- read_p_total("raw_data/B02Sep12.xlsx", 2012)
+p_2011 <- read_p_total("raw_data/B02Sep11.xlsx", 2011)
+p_2010 <- read_annoyed("raw_data/B02Sep10.xlsx", 2010)
+p_2009 <- read_p_total("raw_data/B02Sep09.xlsx", 2009)
+p_2008 <- read_p_total("raw_data/B02Sep08.xlsx", 2008)
+p_2007 <- read_p_total("raw_data/B02Sep07.xlsx", 2007)
+p_2006 <- read_annoyed("raw_data/b2_2.xlsx", 2006)
+p_2005 <- read_p_total("raw_data/b2_1.xlsx", 2005)
+
+roberts_circuit <- rbind(p_2019, p_2018, p_2017, p_2016, p_2015, p_2014, p_2013, p_2012, p_2011, p_2010, p_2009, p_2008, p_2007, p_2006, p_2005)
+
+# These are all of the years that Roberts has been Chief Justice. I could probably find more data but this took a lot
+# of random work to even get, so I don't really want to
+# go about prepping more data for analysis haha. 
+
+stan_glm(as.numeric(granted) ~ circuit_and_nature_of_proceeding + filed,
+         data = roberts_circuit,
+         refresh = 0)
 
 ```
 

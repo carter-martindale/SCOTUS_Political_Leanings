@@ -170,6 +170,10 @@ justice$issue_area[which(justice$issue_area == 12)] <- "Federal Taxation"
 justice$issue_area[which(justice$issue_area == 13)] <- "Misc"
 justice$issue_area[which(justice$issue_area == 14)] <- "Private Laws"
 
+justice$direction[which(justice$direction == 2)] <- 0
+
+d$decision_direction[which(d$decision_direction == 2)] <- 0
+
 d$jurisdiction[which(d$jurisdiction == 1)] <- "cert"
 d$jurisdiction[which(d$jurisdiction == 2)] <- "appeal"
 d$jurisdiction[which(d$jurisdiction == 3)] <- "bail"
@@ -327,12 +331,12 @@ server <- function(input, output, session) {
     
     output$plot3 <- renderPlot({
         d %>%
-            filter(decision_direction %in% c(1, 2)) %>%
+            filter(decision_direction %in% c(0, 1)) %>%
             ggplot(aes(x = term, fill = chief)) +
             geom_bar(position = "dodge") +
             facet_wrap(~decision_direction,
                        labeller = labeller(decision_direction = c(
-                           "1" = "Conservative", "2" = "Liberal"))) +
+                           "0" = "Liberal", "1" = "Conservative"))) +
             scale_fill_discrete(name = "Chief",
                                 breaks = c("Vinson", "Warren",
                                            "Burger", "Rehnquist",
@@ -366,10 +370,12 @@ server <- function(input, output, session) {
             filter(issue_area == input$b,
                    chief == input$c) %>%
             ggplot(aes(x = issue_area)) +
-            geom_bar(fill = "blue") +
+            geom_bar(fill = "blue",
+                     aes(y = (..count..)/sum(..count..))) +
+            scale_y_continuous(labels = scales::percent) +
             facet_wrap(~decision_direction,
                      labeller = labeller(decision_direction = c(
-                "1" = "Conservative", "2" = "Liberal"))) +
+                "0" = "Liberal", "1" = "Conservative"))) +
             labs(title = "Decision Direction by Issue",
                  x = "Issue Area",
                  y = "Number of Cases")
@@ -399,15 +405,15 @@ server <- function(input, output, session) {
                            bins = 100, 
                            position = "identity",
                            color = "white") +
-            geom_vline(xintercept = 1.5, lty = 2,
+            geom_vline(xintercept = 0.5, lty = 2,
                        color = "red") +
             labs(title = "Posterior Probability Distribution",
-                 subtitle = "Average Vote Direction on ____",
+                 subtitle = (paste("Average Vote Direction on",input$I)),
                  x = "Vote Direction",
                  y = "Probability",
-                 caption = "Data falling within 1 and 1.5 indicate an instance
-                 in which that justice would cast a Conservative vote.
-                 Data in between 1.5 and 2 represent a Liberal vote") +
+                 caption = "Data falling within 0 and 0.5 indicate an instance
+                 in which that justice would cast a Liberal vote.
+                 Data in between 0.5 and 1 represent a Conservative vote") +
             scale_y_continuous(labels = scales::percent_format()) +
             theme_classic()
     })
