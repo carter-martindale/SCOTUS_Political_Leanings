@@ -293,9 +293,16 @@ roberts_circuit <- rbind(p_2019, p_2018, p_2017, p_2016, p_2015, p_2014, p_2013,
 # of random work to even get, so I don't really want to
 # go about prepping more data for analysis haha. 
 
-stan_glm(as.numeric(granted) ~ circuit_and_nature_of_proceeding + filed,
+roberts_model <- stan_glm(as.numeric(granted) ~ circuit_and_nature_of_proceeding,
          data = roberts_circuit,
          refresh = 0)
+
+take_2 <- stan_glm(as.numeric(granted) ~ circuit_and_nature_of_proceeding + year - 1,
+         data = roberts_circuit,
+         refresh = 0)
+
+print(roberts_model, digits = 3)
+print(take_2, digits = 3)
 
 ```
 

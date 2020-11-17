@@ -70,7 +70,8 @@ d<- read_csv("SCDB_2020_01_caseCentered_LegalProvision.csv",
            date_argument_new = mdy(date_argument),
            date_rearg_new = mdy(date_rearg)) %>% 
     select(us_cite, term, chief, case_origin_state, issue,
-           issue_area, jurisdiction, decision_direction)
+           issue_area, jurisdiction, decision_direction) %>% 
+    drop_na(decision_direction)
 
 justice <- read_csv("SCDB_2020_01_justiceCentered_Citation.csv", col_names = TRUE, cols(
     caseId = col_character(),
@@ -195,20 +196,24 @@ ui <- navbarPage(
     tabPanel("Home", 
              titlePanel("Welcome to my Page!"),
              h3("About Me"),
-             p("My name is Carter Martindale and I study History.
-               I'm originally from Hyde Park, Utah, and am a current
-               sophomore at Harvard. I'm also a student coordinator for",
+             p("My name is Carter Martindale and I'm pursuing an AB in 
+             Government. I'm originally from Hyde Park, Utah, and am a 
+             current sophomore at Harvard studying remotely from Provo, Utah. 
+             Outside of class I'm involved with Harvard Model Congress, The
+               Small Claims Advisory Service, and my church group. 
+               I'm also a student coordinator for",
                a("HFAI,", 
                  href = "https://college.harvard.edu/carter-martindale"),
-               "so feel free to check out that page.
+               "so check out that page to learn more about us.
                You can reach me at carter_martindale@college.harvard.edu.")),
     tabPanel("Model",
             h3("Let's talk about the Justices..."),
-            p("Here come the big guns, the super cool analysis, the knock
-              your socks off models. We're going to try to predict which way
-              a Justice will vote (Conservative or Liberal) on a certain issue
-              of your choice. I've preselected justices who are currently
-              alive and who have been on the court for at least 10 years."),
+            p("So I need to refine my code for this section, but essentially
+              we're going to try to predict which way a justice will vote
+              on a certain issue of your choice. I've preselected justices 
+              who are currently alive and who have been on the court for at
+              least 10 years to ensure that we have a good amount of data to 
+              draw on."),
             p("This may take a few seconds to create the plot once you choose an
               issue area."),
             fluidPage(
@@ -221,20 +226,20 @@ ui <- navbarPage(
                                        "Federal Taxation", "Misc", "Private Laws"
                 )),
                 plotOutput("plot_regress"))),
-     tabPanel("SCOTUS Over the Years",
-            h3("Most Commmon..."),
-            p("This plot can be used to find out the most common x of 
-            SCOTUS- the most common state for a case to come from, the most
-            common issue area for a case to fall under, etc."),
-            p("Honestly I am probably going to delete this section since it 
-              isn't really doing much and will just take a lot of time to 
-              keep cleaning it up."),
-            fluidPage(
-                 selectInput("z", "X Variable", choices = c("case_origin_state",
-                                                            "jurisdiction",
-                                                            "issue_area",
-                                                            "decision_direction")),
-                 plotOutput("plot2"))),
+     # tabPanel("SCOTUS Over the Years",
+     #        h3("Most Commmon..."),
+     #        p("This plot can be used to find out the most common x of 
+     #        SCOTUS- the most common state for a case to come from, the most
+     #        common issue area for a case to fall under, etc."),
+     #        p("Honestly I am probably going to delete this section since it 
+     #          isn't really doing much and will just take a lot of time to 
+     #          keep cleaning it up."),
+     #        fluidPage(
+     #             selectInput("z", "X Variable", choices = c("case_origin_state",
+     #                                                        "jurisdiction",
+     #                                                        "issue_area",
+     #                                                        "decision_direction")),
+     #             plotOutput("plot2"))),
     
     tabPanel("The Good Stuff",
             h3("Case Salience"),
@@ -282,10 +287,18 @@ ui <- navbarPage(
     
     tabPanel("Discussion",
              titlePanel("What I Don Did"),
-             p("Eventually I'll include a discussion about my data
-               here and the choices I made. I should probably start that
-               pretty soon. For now, can anyone help me make a subtitle
-               of a plot reactive? Can't quite figure out how to do that")),
+             p("I drew primarily on three sources of data for my project.
+             I used two datasets from the Supreme Court Database which gave 
+             me access to every Supreme Court Decision since the 1950's. Cases
+             were already divided into preset issue areas, and decisions by
+             the overall court were classified as either liberal or conservative. 
+             The second dataset from the Supreme Court Database focused on the 
+             decisions of individual justices, which allowed me to make a model
+             predicting the decisions of current Justices."),
+             p("The last source of data I used was compiled from uscourts.gov and
+               it contained information about how many cases were petitioned to the 
+               Supreme Court in a given year. This data was already divided based
+               on which court the case came from.")),
     
     tabPanel("About", 
              titlePanel("About"),
@@ -295,18 +308,11 @@ ui <- navbarPage(
                is essentially trying to draw meaningful conclusions
                about the history of the Supreme Court, and specifically
                how the court has ruled historically on various hot button
-               issues."),
-             p("So far I have begun working with two different datasets.
-               The first is from the Supreme Court Data Project and contains
-               a fairly comprehensive list of all Supreme Court decisions from
-               the Vinson Court until 2019. This dataset focused primarily on
-               the legal issue presented in each case. The second dataset is also from
-               The Supreme Court Data Project. This dataset, however, focuses
-               more on the justices themselves and how they voted on each issue.
-               Check out my repo",
+               issues, and how they may rule on those issues today."),
+             p("Check out my repo",
                a("here", 
                  href = "https://github.com/carter-martindale/milestone_4"),
-               "to see the rest of my work")))
+               "to see the rest of my work.")))
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
@@ -370,7 +376,7 @@ server <- function(input, output, session) {
             filter(issue_area == input$b,
                    chief == input$c) %>%
             ggplot(aes(x = issue_area)) +
-            geom_bar(fill = "blue",
+            geom_bar(fill = "green",
                      aes(y = (..count..)/sum(..count..))) +
             scale_y_continuous(labels = scales::percent) +
             facet_wrap(~decision_direction,
