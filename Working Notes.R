@@ -55,9 +55,10 @@ d$issue_area
 
 justice_2 <- justice %>%
   select(term, chief,
-         issue, issue_area,
+         issue_area,
          decision_direction, justice, justice_name, vote,
-         decision_direction_dissent, maj_opin_writer, direction)
+         decision_direction_dissent, maj_opin_writer, direction) %>% 
+  drop_na(direction)
 
 justice_2$issue_area[which(justice_2$issue_area == 1)] <- "Criminal Procedure"
 justice_2$issue_area[which(justice_2$issue_area == 2)] <- "Civil Rights"

@@ -206,7 +206,7 @@ ui <- navbarPage(
                  href = "https://college.harvard.edu/carter-martindale"),
                "so check out that page to learn more about us.
                You can reach me at carter_martindale@college.harvard.edu.")),
-    tabPanel("Model",
+    tabPanel("Model- The Justices",
             h3("Let's talk about the Justices..."),
             p("So I need to refine my code for this section, but essentially
               we're going to try to predict which way a justice will vote
@@ -241,7 +241,7 @@ ui <- navbarPage(
      #                                                        "decision_direction")),
      #             plotOutput("plot2"))),
     
-    tabPanel("The Good Stuff",
+    tabPanel("The Cases",
             h3("Case Salience"),
             p("This plot shows trends in the number of cases under each chief
               by issue area. You can notice some historical trends in the type
