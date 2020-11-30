@@ -8,16 +8,50 @@ justice_2 %>%
   sample_n(5)
 
 set.seed(10)
-justice_split <- initial_split(justice_2, prob = 0.80)
+justice_split <- initial_split(justice_2, prob = 0.20)
 justice_train <- training(justice_split)
 justice_test  <- testing(justice_split)
 justice_folds <- vfold_cv(justice_train, v = 5)
 
-justice_2 %>% 
-  group_by(chief) %>% 
-  summarize(avg_decision = mean(direction), .groups = "drop") %>% 
-  ggplot(aes(x = chief, y = avg_decision)) + 
-  geom_point()
+
+stan_glm(data = justice_train,
+         direction ~ chief + issue_area + term,
+         refresh = 0,
+         family = binomial())
+
+logit <- glm(data = justice_train,
+             direction ~ chief + issue_area + term + justice_name,
+             family = "binomial")
+summary(logit)
+confint(logit)
+
+current_justice <- justice_2 %>% 
+  filter(justice_name %in% c("JGRoberts", "CThomas",
+                             "SGBreyer", "SAAlito",
+                             "SSotomayor"))
+
+
+set.seed(9)
+c_justice_split <- initial_split(current_justice, prob = 0.20)
+c_justice_train <- training(c_justice_split)
+c_justice_test  <- testing(c_justice_split)
+current_logit <- glm(data = c_justice_train,
+                     direction ~ issue_area + justice_name,
+                     family = "binomial")
+summary(current_logit)
+confint(current_logit)
+exp(coef(current_logit))
+exp(cbind(OR = coef(current_logit), confint(current_logit)))
+
+# Just to look at the number of directions/general trends
+# justice_2 %>% 
+#   group_by(chief) %>% 
+#   summarize(avg_decision = mean(direction), .groups = "drop") %>% 
+#   ggplot(aes(x = chief, y = avg_decision)) + 
+#   geom_point()
+
+
+# Basically just took this directly from chapter 12 in the book.
 
 glm_wfl <- workflow() %>% 
   add_model(logistic_reg() %>%
