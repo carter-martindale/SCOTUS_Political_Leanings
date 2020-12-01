@@ -16,6 +16,8 @@ library(janitor)
 library(rstanarm)
 library(readxl)
 library(tidymodels)
+library(gtsummary)
+library(broom.mixed)
 ```
 
 ## SC case centered
@@ -443,9 +445,13 @@ roberts_circuit$percent_denied[which(roberts_circuit$percent_denied == "Inf")] <
 # Since there were a few rows that ended up with 0 divided by
 # 0 I just manually changed those to be zero
 
+```
+
+```{r circuit court model}
+
 roberts_model <- stan_glm(percent_granted ~
                             nature_of_proceeding + year
-                          + district,
+                          + district - 1,
          data = roberts_circuit,
          refresh = 0)
 print(roberts_model, digits = 4)
@@ -454,9 +460,14 @@ print(roberts_model, digits = 4)
 # granted cases onto the nature of the case, the year
 # it was petitioned, and the district it came from. 
 
-roberts_model_2 <- stan_glm(percent_granted ~
+roberts_intercept <- stan_glm(percent_granted ~
                             nature_of_proceeding + year
-                          + district +
+                          + district,
+         data = roberts_circuit,
+         refresh = 0)
+print(roberts_intercept, digits = 4)
+
+roberts_model_2 <- stan_glm(percent_granted ~
                             nature_of_proceeding*district,
          data = roberts_circuit,
          refresh = 0)
@@ -466,7 +477,115 @@ print(roberts_model_2, digits = 4)
 # significant interaction between the district a case came
 # from and the nature of that case (IE is a criminal case more
 # likely to be heard if it is from a certain district?).
+# Using the MAD_SD, proceedings from the 11th Circuit,
+# U.S. Civil cases from the 2nd Circuit, Criminal and U.S. Civil
+# from the 3rd, Criminal from Circuit 4, Private Civil from
+# Circuit 5, Criminal and U.S. Civil from Circuit 8,
+# U.S. Civil from Circuit 9, and all proceedings from the
+# DC Circuit disprove the null hypothesis. 
 
+tbl_regression(roberts_intercept, intercept = TRUE) %>%
+  as_gt() %>% 
+  tab_header(title = "Regression of Granted Petitions for Writ of Certiori", 
+               subtitle = "The Effect of case type, origin, and year on petition success") %>%
+    tab_source_note(md("Source: Circuit Court Data"))
+
+# w/ the intercept. Based on the MAD_SD, all of the nature
+# predictions can be regarded as significant, in addition to 
+# the value for year. Regarding individual districts,
+# only Districts 3, 7, 9, 11, and DC disprove the null 
+# hypothesis. 
+
+tbl_regression(roberts_model_2, intercept = TRUE, 
+               include = c("(Intercept)",
+               "nature_of_proceeding:district")) %>% 
+  as_gt() %>% 
+  tab_header(title = "Regression of Granted Petitions for Writ of Certiori", 
+               subtitle = "The Effect of case type and origin interaction on petition success") %>%
+    tab_source_note(md("Source: Circuit Court Data"))
 
 ```
+
+```{r plots for circuit court data}
+
+fit <- stan_glm(percent_granted ~ district,
+         data = roberts_circuit,
+         refresh = 0)
+new_obs <- tibble(district = c("1st", "2nd", "3rd", "4th", "5th",
+                               "6th", "7th", "8th", "9th", "10th",
+                               "11th", "DC"))
+
+ep <- posterior_epred(fit,
+                  newdata = new_obs) %>% 
+  as_tibble() %>% 
+  mutate_all(as.numeric) %>% 
+  rename(DC = `12`) %>% 
+  pivot_longer(cols = 1:DC,
+               names_to = "Circuit",
+               values_to = "Prediction")
+
+ep %>%
+  ggplot(aes(Prediction)) +
+   geom_histogram(aes(y = after_stat(count/sum(count))),
+                   bins = 100, 
+                   position = "identity",
+                   color = "grey") +
+     facet_wrap(~Circuit) +
+  labs(x = "Percentage of Successful Petitions",
+       y = "Probability",
+       title = "Percentage of Successful Petitions by Circuit Origin",
+       subtitle = "DC seems to be the most reliable circuit for a successful petition") +
+  theme_classic()
+```
+
+```{r justice model plots}
+
+# This is where I did the heavy lifting for my 2nd model,
+# one predicting how a certain Justice will vote on a given
+# issue area. It was then a simple matter to change this code
+# in my app.r file to be interactive.
+
+fit <- justice_2 %>% 
+  filter(justice_name %in% c("JGRoberts", "CThomas",
+                                       "SGBreyer", "SAAlito",
+                                       "SSotomayor"),
+                   issue_area == "Economic Activity")
+
+# what issue_area is filtered will ultimately be interactive.
+
+fit_obj <- stan_glm(data = fit,
+                    direction ~ justice_name - 1,
+                    refresh = 0)
+new_obj <- tibble(justice_name = c("JGRoberts", "CThomas",
+                                       "SGBreyer", "SAAlito",
+                                       "SSotomayor"))
+
+# I decided to use posterior_epred since we aren't going to have
+# values less than one. 
+
+ep <- posterior_epred(fit_obj, newdata = new_obj) %>% 
+  as_tibble() %>% 
+  mutate_all(as.numeric) %>% 
+  rename(Roberts = `1`,
+         Thomas = `2`,
+         Breyer = `3`,
+         Alito = `4`,
+         Sotomayor = `5`) %>% 
+  pivot_longer(cols = Roberts:Sotomayor,
+               names_to = "Justice",
+               values_to = "Vote")
+
+ep %>% 
+ggplot(aes(x = Vote)) +
+            geom_histogram(aes(y = after_stat(count/sum(count)),
+                               fill = Justice),
+                           alpha = 0.5, 
+                           bins = 100, 
+                           position = "identity",
+                           color = "white") +
+            geom_vline(xintercept = 0.5, lty = 2,
+                       color = "red")
+
+```
+
 

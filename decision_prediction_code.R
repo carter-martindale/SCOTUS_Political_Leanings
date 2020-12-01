@@ -31,13 +31,13 @@ current_justice <- justice_2 %>%
                              "SSotomayor"))
 
 
-set.seed(9)
 c_justice_split <- initial_split(current_justice, prob = 0.20)
 c_justice_train <- training(c_justice_split)
 c_justice_test  <- testing(c_justice_split)
 current_logit <- glm(data = c_justice_train,
                      direction ~ issue_area + justice_name,
                      family = "binomial")
+print(current_logit)
 summary(current_logit)
 confint(current_logit)
 exp(coef(current_logit))
