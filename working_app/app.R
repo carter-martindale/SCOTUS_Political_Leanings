@@ -26,7 +26,7 @@ ui <- navbarPage(
     tabPanel("A Historical Overview of SCOTUS Cases",
              h3("Case Salience"),
              p("Acting as background knowledge for my models, this page focuses
-            on the historicy of voting decisions within the court. 
+            on the history of voting decisions within the court. 
             This plot visually displays the number of cases under each Chief
               Justice by issue area. See if you can notice any patterns in the
               type of cases brought before each court."),
@@ -103,31 +103,32 @@ ui <- navbarPage(
             p("First let's look at some tables. For my first model, I analyzed
               the percentage of petitions that were successful based on the
               nature of the case, which circuit court it came from, and what
-              year the petition was submitted. Put simply, a higher Beta value
-              means a higher predicted success rate for a given case that
-              meets the given condition."),
+              year the petition was submitted. You can think of the Intercept
+              as a starting value. In this case, it represents an administrative
+              appeals case from the First Circuit filed in 2005. The Beta
+              values then describe the predicted success rate relative to that 
+              first case- so a higher Beta value means a higher predicted 
+              success rate, and a negative Beta value means that case is less
+              likely to be granted a petition."),
             tags$img(height = 500, 
                      width = 400, 
                      src = "table1.png",
                      align = "center"),
             p("Based on the MAD_SD of my model, each of the predictions for the
-            nature_of_proceeding characteristics disprove the null hypothesis,
-            so I am considering them significant for our purposes. This means
-            that while there is a negative directionality for each of the 
-            proceedings, both U.S. and Private Civil cases are less likely to 
-            have their petition approved than a criminal case. Unfortunately, I
-            didn't have enough data to draw a meaningful conclusion about
-            adminsistrative affair cases."),
-            p("Other values that can be considered significant are the coefficient
-            for year, and those from the 3rd, 7th, 9th, 11th, and DC circuits. 
-            ased on the MAD_SD, all of the nature. It appears that as time has
-            gone on, the Roberts court has been less likely to approve a
-            petition. It also seems that DC and the 7th Circuit Court are
-            predicted to have a higher chance of being chosen than those in the 
-            3rd, 9th, and 11th Circuit by 3 - 5 percent."),
+            nature_of_proceeding characteristics can be considered significant
+            for our purposes. This means that administrative appeals cases are 
+            predicted to have the highest percentage of success, and that
+            both U.S. and Private Civil cases are less likely to 
+            have their petition approved than a criminal case."),
+            p("My model also predicts that the later a case is filed, the less
+            likely a case is to have its petition granted. Finally, while not
+            all of the Circuit coefficients can be considered statistically 
+            significant, my model predicts that cases from the DC and 7th
+            Circuit courts will have the greatest percentage of success compared
+            to other Circuits."),
             plotOutput("plot_circuit"),
-            p("This plot shows the predicted probability for the likelihood
-              that a case will be granted its petition based on the origin
+            p("This plot shows the predicted probability for the percentage of 
+              cases that will be granted a petition based on their origin
               location. As we saw in the first table, DC is predicted to
               have the highest percentage of petitions granted."),
             p("The following table is a continuation of the idea in table 1, but
@@ -141,14 +142,18 @@ ui <- navbarPage(
                      width = 400,
                      src = "table3.png",
                      align = "center"),
-            p("Using the MAD_SD, proceedings from the 11th Circuit,
-            U.S. Civil cases from the 2nd, 3rd, 8th, and 9th Circuit,
-            Private civil cases from the 5th, and Criminal cases from the
-            3rd and 8th are all reliable predictions. Similarly, any prediction
-            from DC is reliable."),
-            p("While the overall trend of DC having the highest predicted
-              successful petitions, when looking at the interaction of case
-              nature AND location we see that...")
+            p("Again, not all of the interaction terms are statistically 
+            significant, so I won't go into those. But my model does predict
+            that U.S. Civil cases will have the highest percentage of successful
+            petitions coming from the 8th, 9th, and 11th Circuits. Criminal
+            cases are also predicted to do well from the 8th and 11th circuits."),
+            p("However, this model is far from perfect- the lack of more 
+              variables hampers my model. I think that future models could
+              try to gather information pertaining to whether or not there was
+              media coverage around a certain case, who filed each case, the
+              number of amicus Curae briefs submitted on behalf of a case, and 
+              other factors that, in my mind, might also play into whether or
+              not a case is chosen by the Supreme Court.")
             ),
     
     tabPanel("Interesting Findings",
@@ -161,8 +166,20 @@ ui <- navbarPage(
                  plotOutput("plot3")
              )),
     
-    tabPanel("Discussion",
-             titlePanel("What I Don Did"),
+    tabPanel("About", 
+             titlePanel("About"),
+             h3("Project Background and Motivations"),
+             p("Long story short I became a Supreme Court case law
+               nerd my senior year of high school. This project 
+               is essentially trying to draw meaningful conclusions
+               about the history of the Supreme Court, and specifically
+               how the court has ruled historically on various hot button
+               issues, and how they may rule on those issues today."),
+             p("Check out my repo",
+               a("here", 
+                 href = "https://github.com/carter-martindale/milestone_4"),
+               "to see the rest of my work."),
+             h3("Discussion of the Data"),
              p("I drew primarily on three sources of data for my project.
              I used two datasets from the Supreme Court Database which gave 
              me access to every Supreme Court Decision since the 1950's. Cases
@@ -182,21 +199,7 @@ ui <- navbarPage(
                in depth analysis of other factors (who such cases were 
                represented by, how many briefs were submitted in support of it,
                media coverage of a case, etc) would be highly beneficial
-               to the accuracy of any predictive model.")),
-    
-    tabPanel("About", 
-             titlePanel("About"),
-             h3("Project Background and Motivations"),
-             p("Long story short I became a Supreme Court case law
-               nerd my senior year of high school. This project 
-               is essentially trying to draw meaningful conclusions
-               about the history of the Supreme Court, and specifically
-               how the court has ruled historically on various hot button
-               issues, and how they may rule on those issues today."),
-             p("Check out my repo",
-               a("here", 
-                 href = "https://github.com/carter-martindale/milestone_4"),
-               "to see the rest of my work."),
+               to the accuracy of any predictive model."),
              h3("About Me"),
              p("My name is Carter Martindale and I'm pursuing an AB in 
              Government. I'm originally from Hyde Park, Utah, and am a 
@@ -206,7 +209,7 @@ ui <- navbarPage(
                I'm also a student coordinator for",
                a("HFAI,", 
                  href = "https://college.harvard.edu/carter-martindale"),
-               "so check out that page to learn more about us.
+               "so feel free to check out that page to learn more about HFAI.
                You can reach me at carter_martindale@college.harvard.edu.")
              ))
 
@@ -340,13 +343,13 @@ server <- function(input, output, session) {
     })
     
     output$plot_circuit <- renderPlot({
-        ep %>%
+        ep_new %>%
             ggplot(aes(Prediction)) +
             geom_histogram(aes(y = after_stat(count/sum(count))),
                            bins = 100, 
                            position = "identity",
                            color = "deepskyblue4") +
-            facet_wrap(~Circuit) +
+            facet_wrap(~Circuit_f) +
             labs(x = "Percentage of Successful Petitions",
                  y = "Probability",
                  title = "Percentage of Successful Petitions by Circuit Origin",

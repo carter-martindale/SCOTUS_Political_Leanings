@@ -99,3 +99,28 @@ justice$direction[which(justice$direction == 2)] <- 0
 # Once again, this put a liberal vote on the left of any visual plot and 
 # a conservative vote on the right, a change that makes the plots more 
 # intuitive for anyone who is looking at them for the first time. 
+
+fit <- justice %>% 
+  filter(justice_name %in% c("JGRoberts", "CThomas",
+                             "SGBreyer", "SAAlito",
+                             "SSotomayor"),
+         issue_area %in% c("1st Amendment"))
+
+fit_obj <- stan_glm(data = fit,
+                    direction ~ justice_name,
+                    refresh = 0)
+print(fit_obj, digits = 4)
+
+# This code was to create a small table that will go with the
+# interactive plot. I made a model of regressing vote direction onto
+# each individual justice, but only dealing with the 5 Justices who have
+# been on the court for 10 years or more and only pertaining to 1st Amendment
+# issues. 
+
+tbl_regression(fit_obj, intercept = TRUE) %>%
+  as_gt() %>% 
+  tab_header(title = "Regression of Justice Vote Direction", 
+             subtitle = "Looking at 1st Amendment Cases") %>%
+  tab_source_note(md("Source: The Supreme Court Database"))
+
+# This is the table I will end up displaying. 

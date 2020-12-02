@@ -146,6 +146,11 @@ roberts_circuit <- roberts_circuit %>%
          percent_denied =
            (as.numeric(denied)/as.numeric(filed)) *100)
 
+# This will allow my models to work with a percentage of cases granted
+# rather than simply the overall amount of cases. This will control for
+# different amounts of cases being submitted for petition in different
+# places and during different years. 
+
 roberts_circuit$percent_granted[which(roberts_circuit$percent_granted == "NaN")] <- 0
 roberts_circuit$percent_denied[which(roberts_circuit$percent_denied == "Inf")] <- 0
 
@@ -153,8 +158,18 @@ roberts_circuit$percent_denied[which(roberts_circuit$percent_denied == "Inf")] <
 # 0 we got some strange outputs, so I changed those to be 0 since for our
 # purposes that is essentially what it is saying. 
 
+roberts_new <- roberts_circuit
+roberts_new$district <- factor(roberts_new$district,
+                         levels = c("1st", "2nd", "3rd", "4th", "5th",
+                                    "6th", "7th", "8th", "9th", "10th",
+                                    "11th", "DC"))
+
+# At first it was spitting out data with funny levels- it had the 11th
+# Circuit first, and then 10th, and then 1st, etc. So I decided to 
+# reorder my data so 1st came first and DC came last.
+
 fit <- stan_glm(percent_granted ~ district,
-                data = roberts_circuit,
+                data = roberts_new,
                 refresh = 0)
 new_obs <- tibble(district = c("1st", "2nd", "3rd", "4th", "5th",
                                "6th", "7th", "8th", "9th", "10th",
@@ -176,6 +191,17 @@ ep <- posterior_epred(fit,
 # The aesthetic changes and pivot I added to this pipe to make
 # the actual plot output that appears in my app.r document simpler. 
 
+ep_new <- ep
+ep_new$Circuit_f <- factor(ep_new$Circuit,
+                               levels = c("1", "2", "3", "4", "5",
+                                          "6", "7", "8", "9", "10",
+                                          "11", "DC"))
+
+# The last thing I did was to make a new variable circuit_f which was
+# the circuit value, but as a factor. Reordering that factor then made
+# my plot appear in numerical order, rather than the formerly apparently
+# random order it appeared in at first. 
+
 # From this point on is the code I used to create the tables that 
 # are displayed with my first model. The objects created here come primarily from 
 
@@ -189,18 +215,20 @@ roberts_model <- stan_glm(percent_granted ~
 # granted cases onto the nature of the case, the year
 # it was petitioned, and the district it came from. 
 
-roberts_intercept <- stan_glm(percent_granted ~
-                                nature_of_proceeding + year
-                              + district,
-                              data = roberts_circuit,
-                              refresh = 0)
+roberts_new_intercept <- stan_glm(percent_granted ~
+                          nature_of_proceeding + year
+                        + district,
+                        data = roberts_new,
+                        refresh = 0)
+print(roberts_new_intercept, digits = 4)
 
 # This is the same model as my first, just with an intercept this time. 
 
 roberts_model_2 <- stan_glm(percent_granted ~
                               nature_of_proceeding*district,
-                            data = roberts_circuit,
+                            data = roberts_new,
                             refresh = 0)
+print(roberts_model_2, digits = 4)
 
 # My second model- this one looked to see if there was any 
 # significant interaction between the district a case came
@@ -213,7 +241,7 @@ roberts_model_2 <- stan_glm(percent_granted ~
 # U.S. Civil from Circuit 9, and all proceedings from the
 # DC Circuit disprove the null hypothesis. 
 
-tbl_regression(roberts_intercept, intercept = TRUE) %>%
+tbl_regression(roberts_new_intercept, intercept = TRUE) %>%
   as_gt() %>% 
   tab_header(title = "Regression of Granted Petitions for Writ of Certiori", 
              subtitle = "The Effect of case type, origin, and year on petition success") %>%
