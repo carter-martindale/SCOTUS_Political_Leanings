@@ -1,4 +1,10 @@
 
+# These were my first attempts at making models/trying to
+# make predictions regarding a Jutstice vote. I also tried
+# using the logit function here, but the stan_glm
+# function was much more intuitive so I ended up sticking
+# with that instead. 
+
 justice_2 %>% 
   mutate(direction = as.factor(case_when(
     direction == 0 ~ 0,
@@ -40,8 +46,8 @@ current_logit <- glm(data = c_justice_train,
 print(current_logit)
 summary(current_logit)
 confint(current_logit)
-exp(coef(current_logit))
-exp(cbind(OR = coef(current_logit), confint(current_logit)))
+
+
 
 # Just to look at the number of directions/general trends
 # justice_2 %>% 
@@ -49,9 +55,6 @@ exp(cbind(OR = coef(current_logit), confint(current_logit)))
 #   summarize(avg_decision = mean(direction), .groups = "drop") %>% 
 #   ggplot(aes(x = chief, y = avg_decision)) + 
 #   geom_point()
-
-
-# Basically just took this directly from chapter 12 in the book.
 
 glm_wfl <- workflow() %>% 
   add_model(logistic_reg() %>%

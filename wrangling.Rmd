@@ -20,6 +20,11 @@ library(gtsummary)
 library(broom.mixed)
 ```
 
+This is where I did the majority of my actual coding until 
+I moved it into separate R files that I could then source 
+into my shinyapp. So all of this code/the comments are
+repeated in different .R documents. 
+
 ## SC case centered
 
 ```{r case}
