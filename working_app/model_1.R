@@ -95,21 +95,21 @@ read_2008 <- function(x, y) {
 # 2008 was a really special year apparently. This went by a different format
 # from the general functions I made, and the two other exceptions. 
 
-p_2019 <- read_petition_total("jb_b2_0930.2019.xlsx", 2019)
-p_2018 <- read_petition_total("jb_b2_0930.2018.xlsx", 2018)
-p_2017 <- read_petition_total("jb_b2_0930.2017.xlsx", 2017)
-p_2016 <- read_petition_total("jb_b2_0930.2016.xlsx", 2016)
-p_2015 <- read_p("B02Sep15.xlsx", 2015)
-p_2014 <- read_p("B02Sep14.xlsx", 2014)
-p_2013 <- read_p("B02Sep13.xlsx", 2013)
-p_2012 <- read_p("B02Sep12.xlsx", 2012)
-p_2011 <- read_p("B02Sep11.xlsx", 2011)
-p_2010 <- read_annoyed("B02Sep10.xlsx", 2010)
-p_2009 <- read_p("B02Sep09.xlsx", 2009)
-p_2008 <- read_2008("B02Sep08.xlsx", 2008)
-p_2007 <- read_p("B02Sep07.xlsx", 2007)
-p_2006 <- read_annoyed("b2_2.xlsx", 2006)
-p_2005 <- read_p("b2_1.xlsx", 2005)
+p_2019 <- read_petition_total("raw_data/jb_b2_0930.2019.xlsx", 2019)
+p_2018 <- read_petition_total("raw_data/jb_b2_0930.2018.xlsx", 2018)
+p_2017 <- read_petition_total("raw_data/jb_b2_0930.2017.xlsx", 2017)
+p_2016 <- read_petition_total("raw_data/jb_b2_0930.2016.xlsx", 2016)
+p_2015 <- read_p("raw_data/B02Sep15.xlsx", 2015)
+p_2014 <- read_p("raw_data/B02Sep14.xlsx", 2014)
+p_2013 <- read_p("raw_data/B02Sep13.xlsx", 2013)
+p_2012 <- read_p("raw_data/B02Sep12.xlsx", 2012)
+p_2011 <- read_p("raw_data/B02Sep11.xlsx", 2011)
+p_2010 <- read_annoyed("raw_data/B02Sep10.xlsx", 2010)
+p_2009 <- read_p("raw_data/B02Sep09.xlsx", 2009)
+p_2008 <- read_2008("raw_data/B02Sep08.xlsx", 2008)
+p_2007 <- read_p("raw_data/B02Sep07.xlsx", 2007)
+p_2006 <- read_annoyed("raw_data/b2_2.xlsx", 2006)
+p_2005 <- read_p("raw_data/b2_1.xlsx", 2005)
 
 # Using the functions created above, I then read in all the data. 
 

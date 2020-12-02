@@ -58,7 +58,13 @@ ui <- navbarPage(
                                          "Judicial Power", "Federalism", "Interstate Relations",
                                          "Federal Taxation", "Misc", "Private Laws"
                              )),
-                 plotOutput("plot5"))),
+                 plotOutput("plot5")),
+             p("Some issues, and even some courts overall have had a fairly
+               bipartisan balance. Other courts and other issues, however,
+               clearly lean one way over the other. Moving forward from this,
+               we will be trying to predict how certain justices today would
+               vote on each of these issues.")
+             ),
     
     tabPanel("Model- Voting Centered",
             h3("Can We Predict How a Justice will Vote?"),
@@ -79,7 +85,6 @@ ui <- navbarPage(
                                         "Attorney/Government Fees and Compensation",
                                         "Unions", "Economic Activity",
                                        "Judicial Power", "Federalism",
-                                       "Interstate Relations",
                                        "Federal Taxation", "Misc", "Private Laws"
                 )),
                 plotOutput("plot_regress")),

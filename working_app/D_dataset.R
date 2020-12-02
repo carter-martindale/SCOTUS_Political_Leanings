@@ -1,6 +1,6 @@
 ## D 
 
-d<- read_csv("SCDB_2020_01_caseCentered_LegalProvision.csv",
+d<- read_csv("raw_data/SCDB_2020_01_caseCentered_LegalProvision.csv",
              col_names = TRUE, cols(
                caseId = col_character(),
                docketId = col_character(),

@@ -1,6 +1,6 @@
 ## Justice
 
-justice <- read_csv("SCDB_2020_01_justiceCentered_Citation.csv", col_names = TRUE, cols(
+justice <- read_csv("raw_data/SCDB_2020_01_justiceCentered_Citation.csv", col_names = TRUE, cols(
   caseId = col_character(),
   docketId = col_character(),
   caseIssuesId = col_character(),
