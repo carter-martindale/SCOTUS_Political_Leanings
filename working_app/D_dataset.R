@@ -92,4 +92,4 @@ d$decision_direction[which(d$decision_direction == 2)] <- 0
 # Finally, one of my friends pointed out early on that it seemed wrong that
 # a liberal vote was coined as 2 and thus farther right on the graph. So 
 # changing a 2 (liberal vote) to 0 put Liberal on the left side and Conservative
-# on the right, which is much more intuitive for people. 
+# on the right, which is much more intuitive for people.

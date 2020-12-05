@@ -220,7 +220,6 @@ roberts_new_intercept <- stan_glm(percent_granted ~
                         + district,
                         data = roberts_new,
                         refresh = 0)
-print(roberts_new_intercept, digits = 4)
 
 # This is the same model as my first, just with an intercept this time. 
 
@@ -228,7 +227,6 @@ roberts_model_2 <- stan_glm(percent_granted ~
                               nature_of_proceeding*district,
                             data = roberts_new,
                             refresh = 0)
-print(roberts_model_2, digits = 4)
 
 # My second model- this one looked to see if there was any 
 # significant interaction between the district a case came
@@ -242,8 +240,8 @@ print(roberts_model_2, digits = 4)
 # DC Circuit disprove the null hypothesis. 
 
 tbl_regression(roberts_new_intercept, intercept = TRUE) %>%
-  as_gt() %>% 
-  tab_header(title = "Regression of Granted Petitions for Writ of Certiori", 
+  as_gt() %>%
+  tab_header(title = "Regression of Granted Petitions for Writ of Certiori",
              subtitle = "The Effect of case type, origin, and year on petition success") %>%
   tab_source_note(md("Source: Circuit Court Data"))
 
@@ -251,18 +249,25 @@ tbl_regression(roberts_new_intercept, intercept = TRUE) %>%
 # predictions can be regarded as significant, in addition to 
 # the value for year. Regarding individual districts,
 # only Districts 3, 7, 9, 11, and DC disprove the null 
-# hypothesis. 
+# hypothesis. I also put this in as an image.
 
-tbl_regression(roberts_model_2, intercept = TRUE, 
+tbl_regression(roberts_model_2, intercept = TRUE,
                include = c("(Intercept)",
-                           "nature_of_proceeding:district")) %>% 
+                           "nature_of_proceeding:district")) %>%
+  as_gt() %>%
+  tab_header(title = "Regression of Granted Petitions for Writ of Certiori",
+             subtitle = "The Effect of case type and origin interaction on petition success") %>%
+  tab_source_note(md("Source: Circuit Court Data"))
+
+tbl_regression(roberts_model_2, intercept = TRUE) %>% 
   as_gt() %>% 
-  tab_header(title = "Regression of Granted Petitions for Writ of Certiori", 
+  tab_header(title = "Logistic Regression of Granted Petitions for Writ of Certiori",
              subtitle = "The Effect of case type and origin interaction on petition success") %>%
   tab_source_note(md("Source: Circuit Court Data"))
 
 # For the sake of convenience, this chooses only the rows with the interaction
 # terms. All of the other data that would have been put out by this table
-# is displayed by the first table. 
+# is displayed by the first table. I put this in as an image,
+# so there is no need to actually run the code in this r doc.
 
 

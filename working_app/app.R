@@ -60,8 +60,10 @@ ui <- navbarPage(
                              )),
                  plotOutput("plot5")),
              p("Some issues, and even some courts overall have had a fairly
-               bipartisan balance. Other courts and other issues, however,
-               clearly lean one way over the other. Moving forward from this,
+               bipartisan balance (for example, the Vinson Court on Civil
+               Rights issues). Other courts and other issues, however,
+               clearly lean one way over the other (for example, the Roberts
+               Court on Federal Taxation). Moving forward from this,
                we will be trying to predict how certain justices today would
                vote on each of these issues.")
              ),
@@ -88,8 +90,27 @@ ui <- navbarPage(
                                        "Federal Taxation", "Misc", "Private Laws"
                 )),
                 plotOutput("plot_regress")),
-            p("I'll probably include some more analysis here, or maybe another
-              plot with more to choose from than just the Justice.")
+            p("As you can see, some issues are much more 'clear cut' than others
+              when it comes to predicting which way a Justice will lean. I took
+              a closer look at specifically issues on the 1st amendment and came
+              up with these results:"),
+            gt_output("model_table1"),
+            
+            # tags$img(height = 300, 
+            #          width = 150, 
+            #          src = "table4.png",
+            #          style="display: block; margin-left: auto;
+            #          margin-right: auto;"),
+            
+            
+            p("In this instance, the intercept (or reference point) represents
+              Justice Thomas. A value of 0.66 shows that he is predicted to be
+              fairly conservative on issues of the 1st Amendment. The rest of
+              the values show each justice in comparison to Thomas- Alito is 
+              somewhat more liberal, although likely to still cast a 
+              conservative vote. Sotomayor on the other hand is significantly
+              less conservative than Thomas, and predicted to always case
+              a liberal vote.")
             ),
     
     tabPanel("Model- Petition Centered",
@@ -110,10 +131,16 @@ ui <- navbarPage(
               first case- so a higher Beta value means a higher predicted 
               success rate, and a negative Beta value means that case is less
               likely to be granted a petition."),
-            tags$img(height = 500, 
-                     width = 400, 
-                     src = "table1.png",
-                     align = "center"),
+            gt_output("model_table2"),
+            
+            
+            # tags$img(height = 300,
+            #          width = 150,
+            #          src = "table1.png",
+            #          style="display: block; margin-left: auto;
+            #          margin-right: auto;"),
+            
+            
             p("Based on the MAD_SD of my model, each of the predictions for the
             nature_of_proceeding characteristics can be considered significant
             for our purposes. This means that administrative appeals cases are 
@@ -134,16 +161,28 @@ ui <- navbarPage(
             p("The following table is a continuation of the idea in table 1, but
               this time we are looking to see if there is any significant 
               interaction between the type of case and the origin location."),
-            tags$img(height = 400, 
-                     width = 400, 
-                     src = "table2.png",
-                     align = "center"),
-            tags$img(height = 400,
-                     width = 400,
-                     src = "table3.png",
-                     align = "center"),
+            
+            # tags$img(height = 300, 
+            #          width = 150, 
+            #          src = "table2.png",
+            #          style="display: block; margin-left: auto;
+            #          margin-right: auto;"),
+            
+            fluidPage(
+                fluidRow(
+                column(5, gt_output("model_table3"), offset = 1),
+                column(5, gt_output("model_table4"), offset = 1))),
+            
+            # tags$img(height =300,
+            #          width = 150,
+            #          src = "table3.png",
+            #          style="display: block; margin-left: auto;
+            #          margin-right: auto;"),
+            
+            
             p("Again, not all of the interaction terms are statistically 
-            significant, so I won't go into those. But my model does predict
+            significant, so I won't go into each variable. But my model does 
+            predict
             that U.S. Civil cases will have the highest percentage of successful
             petitions coming from the 8th, 9th, and 11th Circuits. Criminal
             cases are also predicted to do well from the 8th and 11th circuits."),
@@ -157,6 +196,7 @@ ui <- navbarPage(
             ),
     
     tabPanel("Interesting Findings",
+             h3("Do I need this page?"),
              h3("The Liberal Warren Court"),
              p("I found this graph very intersesting.
                 The Warren Court by far has been the most liberal court in the last
@@ -237,21 +277,20 @@ server <- function(input, output, session) {
     output$plot4 <- renderPlot({
         d %>% 
             filter(issue_area == input$a) %>% 
-                       # str_sub(input$a, 1, 1)) %>% 
             mutate(chief = fct_relevel(chief,
                                          "Vinson", "Warren",
                                          "Burger", "Rehnquist",
                                          "Roberts")) %>% 
         ggplot(aes(x = issue_area, fill = chief)) +
             geom_bar(position = "dodge") +
-            scale_fill_discrete(name = "Chief",
+            scale_fill_brewer(name = "Chief",
                                 breaks = c("Vinson", "Warren",
                                            "Burger", "Rehnquist",
-                                           "Roberts")) +
+                                           "Roberts"),
+                                    palette = "Accent") +
             labs(title = "Salience of Cases by Issue Area",
                  x = "Issue Area",
-                 y = "Number of Cases") +
-            scale_fill_brewer(palette = "Accent")
+                 y = "Number of Cases")
     })
     
     output$plot5 <- renderPlot({
@@ -341,6 +380,43 @@ server <- function(input, output, session) {
             scale_fill_brewer(palette = "Set1") +
             xlim(0, 1)
     })
+    
+    output$model_table1 <- render_gt({
+        
+        tbl_regression(fit_obj, intercept = TRUE) %>%
+            as_gt() %>% 
+            tab_header(title = "Logistic Regression of Justice Vote Direction", 
+                       subtitle = "Looking at 1st Amendment Cases") %>%
+            tab_source_note(md("Source: The Supreme Court Database"))
+    })
+    
+    output$model_table2 <- render_gt({
+        tbl_regression(roberts_new_intercept, intercept = TRUE) %>%
+            as_gt() %>%
+            tab_header(title = "Logistic Regression of Granted Petitions for Writ of Certiori",
+                       subtitle = "The Effect of case type, origin, and year on petition success") %>%
+            tab_source_note(md("Source: Circuit Court Data"))
+    })
+    
+    output$model_table3 <- render_gt({
+        tbl_regression(roberts_model_2, intercept = TRUE,
+                       include = c("(Intercept)", "nature_of_proceeding",
+                                   "district")) %>% 
+            as_gt() %>% 
+            tab_header(title = "Logistic Regression of Granted Petitions for Writ of Certiori",
+                       subtitle = "The Effect of case type and origin interaction on petition success") %>%
+            tab_source_note(md("Source: Circuit Court Data"))
+    })
+    
+    output$model_table4 <- render_gt({
+        tbl_regression(roberts_model_2, intercept = TRUE,
+                       include = c("nature_of_proceeding:district")) %>% 
+            as_gt() %>% 
+            tab_header(title = "Logistic Regression of Granted Petitions for Writ of Certiori",
+                       subtitle = "The Effect of case type and origin interaction on petition success") %>%
+            tab_source_note(md("Source: Circuit Court Data"))
+    })
+    
     
     output$plot_circuit <- renderPlot({
         ep_new %>%
