@@ -109,7 +109,6 @@ fit <- justice %>%
 fit_obj <- stan_glm(data = fit,
                     direction ~ justice_name,
                     refresh = 0)
-print(fit_obj, digits = 4)
 
 # This code was to create a small table that will go with the
 # interactive plot. I made a model of regressing vote direction onto
@@ -124,3 +123,43 @@ tbl_regression(fit_obj, intercept = TRUE) %>%
   tab_source_note(md("Source: The Supreme Court Database"))
 
 # This is the table I will end up displaying. 
+
+modern_justice <- justice %>% 
+  filter(term > 1980)
+
+greats <- stan_glm(direction ~ justice_name + term,
+                   data = modern_justice,
+                   refresh = 0)
+
+# This is looking at the various justices over the last 50 years. This will
+# allow me to compare and see who is (relatively) the most conservative and the
+# most liberal over the last 50 years). Note that this is currently compared
+# to justice Kennedy.
+
+# print(greats, digits = 4)
+
+# Based on the output, it looks like CThomas, AAlito, and NMGorsuch are the
+# most conservative Justices. For the liberals, TMarshall, WJBrennan, and 
+# JPStevens were the top 3. Ginsburg came in at 5th. 
+
+comparison_justice <- modern_justice %>% 
+  filter(justice_name %in% c("CThomas", "SAAlito", "NMGorsuch", "TMarshall",
+                             "WJBrennan", "JPStevens", "RBGinsburg",
+                             "AMKennedy")) %>% 
+  mutate(justice_name = fct_relevel(justice_name,
+                             "AMKennedy", "CThomas",
+                             "SAAlito", "NMGorsuch",
+                             "TMarshall", "WJBrennan",
+                             "JPStevens", "RBGinsburg"))
+
+polarized <- stan_glm(direction ~ justice_name,
+                      data = comparison_justice,
+                      refresh = 0)
+
+tbl_regression(polarized, intercept = TRUE) %>% 
+  as_gt() %>%
+  tab_header(title = "Linear Regression of Justice Vote Direction",
+             subtitle = "A selection of the most conversative and liberal justices") %>%
+  tab_source_note(md("Source: Supreme Court Database"))
+
+# This is the final project, the table that I output onto my app.

@@ -14,6 +14,7 @@ library(rstanarm)
 library(gtsummary)
 library(broom.mixed)
 library(gt)
+library(shinythemes)
 
 source('D_dataset.R')
 source('Justice.R')
@@ -30,7 +31,7 @@ ui <- navbarPage(
             This plot visually displays the number of cases under each Chief
               Justice by issue area. See if you can notice any patterns in the
               type of cases brought before each court."),
-             fluidPage(
+             fluidPage(theme = shinytheme("cerulean"),
                  selectInput("a", "Issue Area",
                              choices = c("Criminal Procedure", "Civil Rights",
                                          "1st Amendment", "Due Process",
@@ -95,14 +96,7 @@ ui <- navbarPage(
               a closer look at specifically issues on the 1st amendment and came
               up with these results:"),
             gt_output("model_table1"),
-            
-            # tags$img(height = 300, 
-            #          width = 150, 
-            #          src = "table4.png",
-            #          style="display: block; margin-left: auto;
-            #          margin-right: auto;"),
-            
-            
+
             p("In this instance, the intercept (or reference point) represents
               Justice Thomas. A value of 0.66 shows that he is predicted to be
               fairly conservative on issues of the 1st Amendment. The rest of
@@ -133,14 +127,6 @@ ui <- navbarPage(
               likely to be granted a petition."),
             gt_output("model_table2"),
             
-            
-            # tags$img(height = 300,
-            #          width = 150,
-            #          src = "table1.png",
-            #          style="display: block; margin-left: auto;
-            #          margin-right: auto;"),
-            
-            
             p("Based on the MAD_SD of my model, each of the predictions for the
             nature_of_proceeding characteristics can be considered significant
             for our purposes. This means that administrative appeals cases are 
@@ -162,23 +148,10 @@ ui <- navbarPage(
               this time we are looking to see if there is any significant 
               interaction between the type of case and the origin location."),
             
-            # tags$img(height = 300, 
-            #          width = 150, 
-            #          src = "table2.png",
-            #          style="display: block; margin-left: auto;
-            #          margin-right: auto;"),
-            
-            fluidPage(
+            fluidPage(theme = shinytheme("cerulean"),
                 fluidRow(
                 column(5, gt_output("model_table3"), offset = 1),
                 column(5, gt_output("model_table4"), offset = 1))),
-            
-            # tags$img(height =300,
-            #          width = 150,
-            #          src = "table3.png",
-            #          style="display: block; margin-left: auto;
-            #          margin-right: auto;"),
-            
             
             p("Again, not all of the interaction terms are statistically 
             significant, so I won't go into each variable. But my model does 
@@ -196,15 +169,28 @@ ui <- navbarPage(
             ),
     
     tabPanel("Interesting Findings",
-             h3("Do I need this page?"),
              h3("The Liberal Warren Court"),
              p("I found this graph very intersesting.
                 The Warren Court by far has been the most liberal court in the last
                 70 years, but both the Burger and Rehnquist courts seemed to
                 step back from the liberal rulings under Chief Justice Warren."),
-             fluidPage(
+             fluidPage(theme = shinytheme("cerulean"),
                  plotOutput("plot3")
-             )),
+             ),
+             h3("The Emergence of Privacy in Case Law"),
+             p("Something about how up to x court there was no real cases
+               that fall under the realm in privacy but then in ____ year
+               cases started. That goes back to ___ decision, something
+               that could be considered as Liberal because ______"),
+             plotOutput("plot_privacy"),
+             h3("The Greatest of the Greats"),
+             p("Especially in our day and with the passing of RGB, we often
+               refer to her as one of the most liberal of all Supreme Court
+               Justices. I wanted to see if that was true."),
+             gt_output("model_table_greats")
+             
+             ),
+    
     
     tabPanel("About", 
              titlePanel("About"),
@@ -255,7 +241,6 @@ ui <- navbarPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-    
     
     output$plot3 <- renderPlot({
         d %>%
@@ -431,6 +416,33 @@ server <- function(input, output, session) {
                  title = "Percentage of Successful Petitions by Circuit Origin",
                  subtitle = "DC seems to be the most reliable circuit for a successful petition") +
             theme_classic()
+    })
+    
+    output$plot_privacy <- renderPlot ({
+        d %>% 
+            filter(issue_area == "Privacy") %>% 
+            mutate(chief = fct_relevel(chief,
+                                       "Vinson", "Warren",
+                                       "Burger", "Rehnquist",
+                                       "Roberts")) %>% 
+            ggplot(aes(x = term, fill = chief)) +
+            geom_bar(position = "dodge") +
+            scale_fill_brewer(name = "Chief",
+                              breaks = c("Vinson", "Warren",
+                                         "Burger", "Rehnquist",
+                                         "Roberts"),
+                              palette = "Accent") +
+            labs(title = "Historical Occurence of Privacy Cases",
+                 subtitle = "Privacy cases consistently came before the court beginning in 1970",
+                 x = "Term", y = "Number of Cases")
+    })
+    
+    output$model_table_greats <- render_gt({
+        tbl_regression(polarized, intercept = TRUE) %>% 
+            as_gt() %>%
+            tab_header(title = "Linear Regression of Justice Vote Direction",
+                       subtitle = "A selection of the most conversative and liberal justices") %>%
+            tab_source_note(md("Source: Supreme Court Database"))
     })
 
 }

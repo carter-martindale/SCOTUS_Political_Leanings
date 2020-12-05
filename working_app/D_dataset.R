@@ -93,3 +93,24 @@ d$decision_direction[which(d$decision_direction == 2)] <- 0
 # a liberal vote was coined as 2 and thus farther right on the graph. So 
 # changing a 2 (liberal vote) to 0 put Liberal on the left side and Conservative
 # on the right, which is much more intuitive for people.
+
+d %>% 
+  filter(issue_area == "Privacy") %>% 
+  mutate(chief = fct_relevel(chief,
+                             "Vinson", "Warren",
+                             "Burger", "Rehnquist",
+                             "Roberts")) %>% 
+  ggplot(aes(x = term, fill = chief)) +
+  geom_bar(position = "dodge") +
+  scale_fill_brewer(name = "Chief",
+                    breaks = c("Vinson", "Warren",
+                               "Burger", "Rehnquist",
+                               "Roberts"),
+                    palette = "Accent") +
+  labs(title = "Historical Occurence of Privacy Cases",
+       subtitle = "Privacy cases consistently came before the court beginning in 1970",
+       x = "Term", y = "Number of Cases")
+
+# This code makes a plot that I used to display on my Interesting 
+# findings page. It shows how many Privacy cases came before the court in
+# each term. 
