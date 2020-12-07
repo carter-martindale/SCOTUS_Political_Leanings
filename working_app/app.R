@@ -98,13 +98,18 @@ ui <- navbarPage(
             gt_output("model_table1"),
 
             p("In this instance, the intercept (or reference point) represents
-              Justice Thomas. A value of 0.66 shows that he is predicted to be
+              Justice Thomas. The Beta value here represents the relative 
+              conservatism of a judge. A value of 0.66 shows that Justice Thomas
+              is predicted to be
               fairly conservative on issues of the 1st Amendment. The rest of
               the values show each justice in comparison to Thomas- Alito is 
               somewhat more liberal, although likely to still cast a 
-              conservative vote. Sotomayor on the other hand is significantly
-              less conservative than Thomas, and predicted to always case
-              a liberal vote.")
+              conservative vote based on our plot. Sotomayor on the other hand 
+              is significantly
+              less conservative than Thomas. However, it's important to note
+              that this table by itself simply shows directionality- IE more or
+              less conservative. This is opposed to the plot above, which 
+              displays the predicted likelihood of a conservative vote. ")
             ),
     
     tabPanel("Model- Petition Centered",
@@ -127,7 +132,7 @@ ui <- navbarPage(
               likely to be granted a petition."),
             gt_output("model_table2"),
             
-            p("Based on the MAD_SD of my model, each of the predictions for the
+            p("Each of the predictions for the
             nature_of_proceeding characteristics can be considered significant
             for our purposes. This means that administrative appeals cases are 
             predicted to have the highest percentage of success, and that
@@ -153,14 +158,24 @@ ui <- navbarPage(
                 column(5, gt_output("model_table3"), offset = 1),
                 column(5, gt_output("model_table4"), offset = 1))),
             
-            p("Again, not all of the interaction terms are statistically 
-            significant, so I won't go into each variable. But my model does 
-            predict
-            that U.S. Civil cases will have the highest percentage of successful
-            petitions coming from the 8th, 9th, and 11th Circuits. Criminal
-            cases are also predicted to do well from the 8th and 11th circuits."),
-            p("However, this model is far from perfect- the lack of more 
-              variables hampers my model. I think that future models could
+            p("Looking at the table, you will notice the massive range of the
+            confidence interval, and that none of them disprove the null 
+            hypothesis. For these reasons, I don't think the interaction term
+            of origin circuit court and case type give us any significant
+            findings. This could be because I don't have enough data,
+              or because there really isn't any significant relationship
+              between the interaction of case origin and case type on the 
+              success of a petition."),
+            
+            # Again, not all of the interaction terms are statistically 
+            # significant, so I won't go into each variable. But my model does 
+            # predict
+            # that U.S. Civil cases will have the highest percentage of successful
+            # petitions coming from the 8th, 9th, and 11th Circuits. Criminal
+            # cases are also predicted to do well from the 8th and 11th circuits."),
+            
+            p("Moving forward, I think the lack of more variables really hampers 
+              my model. I think that future models could
               try to gather information pertaining to whether or not there was
               media coverage around a certain case, who filed each case, the
               number of amicus Curae briefs submitted on behalf of a case, and 
@@ -170,43 +185,73 @@ ui <- navbarPage(
     
     tabPanel("Interesting Findings",
              h3("The Liberal Warren Court"),
-             p("I found this graph very intersesting.
+             p("Returning to one of my original questions, regarding the 
+             liberality or conservativity of each court, I think this plot is a 
+             very simple representation of my findings. 
                 The Warren Court by far has been the most liberal court in the last
                 70 years, but both the Burger and Rehnquist courts seemed to
-                step back from the liberal rulings under Chief Justice Warren."),
+                step back from the liberal rulings under Chief Justice Warren.
+               The Roberts court seems to have thus far had a balance between
+               liberal and conservative rulings, and the Vinson Court had more
+               Conservative than Liberal rulings."),
              fluidPage(theme = shinytheme("cerulean"),
                  plotOutput("plot3")
              ),
              h3("The Emergence of Privacy in Case Law"),
-             p("Something about how up to x court there was no real cases
-               that fall under the realm in privacy but then in ____ year
-               cases started. That goes back to ___ decision, something
-               that could be considered as Liberal because ______"),
+             p("As I was making the plot displayed on the first page, I noticed
+             that the Vinson and Warren Courts had almost no cases regarding 
+             the right to Privacy. At first I was somewhat surprised, but after 
+             thinking about it this has a purely historical explanation. 
+             The right to privacy is not explicitly stated anywhere in the 
+             Constitution, and it wasn't until the mid-to-late 60's that 
+             discussions of a 'right to privacy' really occured on the Supreme
+             Court. In 1965 the Courts recognized 'zones of privacy' in their 
+             ruling on Griswold v. Connecticut and they expanded those 
+             protections in 1972 in Roe v. Wade."),
              plotOutput("plot_privacy"),
-             h3("The Greatest of the Greats"),
+             p("In the 70's this new explicit use of the 'right to privacy' was
+             expanded to touch on many different issues, explaining the sharp
+             uptake of privacy cases just prior to 1980"),
+             h3("Who is Really the Most Polarized?"),
              p("Especially in our day and with the passing of RGB, we often
                refer to her as one of the most liberal of all Supreme Court
-               Justices. I wanted to see if that was true."),
-             gt_output("model_table_greats")
-             
+               Justices. I wanted to see if that was true. Again, the Beta 
+               value in this table represents the relative
+               leaning of a Justice's decisions. Although they are relative to 
+               Justie Anthony Kennedy, someone who has had a fairly balanced 
+               voting record, as a rule of thumb a higher beta value represents
+               being more conservative, and a lower value represents being
+               more liberal. After analyzing the results I have included
+               the 'top 3' of each direction, while also included RBG for 
+               reference. "),
+             gt_output("model_table_greats"),
+             p("As you can see, Justice Thomas appears as the most conservative
+               Justice, with Alito and Gorsuch taking the next two spots. It may
+               be interesting to note that Justice Scalia does not appear in the 
+               top 3 conservative Justices. On the other side, Justice Marshall 
+               is the most liberal of Justices to date, with Justices Brennan
+               and Stevens in the next two spots. RBG, based on my findings, is
+               the 5th most Liberal Justice the Court has seen since the 1950's.
+               ")
              ),
     
     
     tabPanel("About", 
              titlePanel("About"),
              h3("Project Background and Motivations"),
-             p("Long story short I became a Supreme Court case law
-               nerd my senior year of high school. This project 
-               is essentially trying to draw meaningful conclusions
-               about the history of the Supreme Court, and specifically
-               how the court has ruled historically on various hot button
-               issues, and how they may rule on those issues today."),
+             p("I essentially became a Supreme Court case law nerd my senior 
+             year of high school when I participated in 'We The People', 
+             essentially a constitutional history and law competition for 
+             students. I wanted to undertake this project as an attempt to draw
+             conclusions about the history SCOTUS, and specifically how they
+             have ruled on various issues and how they may rule on those
+             same issues today."),
              p("Check out my repo",
                a("here", 
-                 href = "https://github.com/carter-martindale/milestone_4"),
+                 href = "https://github.com/carter-martindale/SCOTUS_Political_Leanings"),
                "to see the rest of my work."),
              h3("Discussion of the Data"),
-             p("I drew primarily on three sources of data for my project.
+             p("I drew primarily from three sources of data for my project.
              I used two datasets from the Supreme Court Database which gave 
              me access to every Supreme Court Decision since the 1950's. Cases
              were already divided into preset issue areas, and decisions by
@@ -215,7 +260,8 @@ ui <- navbarPage(
              decisions of individual justices, which allowed me to make a model
              predicting the decisions of current Justices."),
              p("The last source of data I used was compiled from uscourts.gov and
-               it contained information about how many cases were petitioned to the 
+               it contained information about how many cases were petitioned to 
+               the 
                Supreme Court in a given year. This data was already divided based
                on which court the case came from. This data was the basis of my
                second model, allowing me to predict the percentage of cases that
@@ -254,18 +300,37 @@ server <- function(input, output, session) {
                                 breaks = c("Vinson", "Warren",
                                            "Burger", "Rehnquist",
                                            "Roberts")) +
+            
+            # This was to order the legend to match up with the way the
+            # plot was displaying the data (chronologically from left to
+            # right). 
+            
             labs(title = "Direction of SCOTUS Rulings",
                  x = "Term",
                  y = "Number of Rulings")
+        
+        # This is a fairly simple plot displaying all of the SCOTUS
+        # decisions from the 1950's onward. It's faceted by decision direction
+        # so that you can compare liberal vs conservative rulings, and then it
+        # is color coordinated by Chief Justice. 
     })
 
     output$plot4 <- renderPlot({
         d %>% 
             filter(issue_area == input$a) %>% 
+            
+            # Really the only fun thing on this graph, this allows
+            # users to choose what issue area they want to look at
+            # and then see how each court has ruled on that issue. 
+            
             mutate(chief = fct_relevel(chief,
                                          "Vinson", "Warren",
                                          "Burger", "Rehnquist",
                                          "Roberts")) %>% 
+            
+            # This releveling made sure that the data was displayed in 
+            # chronological order from left to right. 
+            
         ggplot(aes(x = issue_area, fill = chief)) +
             geom_bar(position = "dodge") +
             scale_fill_brewer(name = "Chief",
@@ -282,6 +347,11 @@ server <- function(input, output, session) {
         d %>% 
             filter(issue_area == input$b,
                    chief == input$c) %>%
+            
+            # This has room for users to customize two things- both the
+            # issue area ruled on, and then the Chief Justice that was currently
+            # appointed. 
+            
             drop_na(decision_direction) %>% 
             ggplot(aes(x = issue_area)) +
             geom_bar(fill = "deepskyblue4",
@@ -290,6 +360,12 @@ server <- function(input, output, session) {
             facet_wrap(~decision_direction,
                      labeller = labeller(decision_direction = c(
                 "0" = "Liberal", "1" = "Conservative", "3" = "Neither"))) +
+            
+            # For my other work on this app I basically got rid of the 'neither'
+            # category, but I noticed that for some courts and some issues they 
+            # only ruled in a 'neither' direction, so I included it in this graph
+            # and needed to add a label that didn't show up as simply NA. 
+            
             labs(title = "Decision Direction by Issue",
                  x = "Issue Area",
                  y = "Number of Cases")
@@ -373,6 +449,8 @@ server <- function(input, output, session) {
             tab_header(title = "Logistic Regression of Justice Vote Direction", 
                        subtitle = "Looking at 1st Amendment Cases") %>%
             tab_source_note(md("Source: The Supreme Court Database"))
+        
+        # What I did for this table can be explained in my model_1 R doc
     })
     
     output$model_table2 <- render_gt({
@@ -381,6 +459,8 @@ server <- function(input, output, session) {
             tab_header(title = "Logistic Regression of Granted Petitions for Writ of Certiori",
                        subtitle = "The Effect of case type, origin, and year on petition success") %>%
             tab_source_note(md("Source: Circuit Court Data"))
+        
+        # See above- the work and explanations can be found in model_1 R
     })
     
     output$model_table3 <- render_gt({
@@ -410,6 +490,11 @@ server <- function(input, output, session) {
                            bins = 100, 
                            position = "identity",
                            color = "deepskyblue4") +
+            
+            # This displays the actual predictions of the likelihood a case
+            # is chosen based on origin Circuit. The rest of the work creating ep
+            # can be found in model_1.R 
+            
             facet_wrap(~Circuit_f) +
             labs(x = "Percentage of Successful Petitions",
                  y = "Probability",
@@ -435,6 +520,12 @@ server <- function(input, output, session) {
             labs(title = "Historical Occurence of Privacy Cases",
                  subtitle = "Privacy cases consistently came before the court beginning in 1970",
                  x = "Term", y = "Number of Cases")
+        
+        # Simple plot displaying privacy cases by term, not by chief Justice
+        # which is something that I have done elsewhere on my app. This is just
+        # showing an interesting historical trend that I noticed while looking
+        # at my data. 
+        
     })
     
     output$model_table_greats <- render_gt({
@@ -443,6 +534,8 @@ server <- function(input, output, session) {
             tab_header(title = "Linear Regression of Justice Vote Direction",
                        subtitle = "A selection of the most conversative and liberal justices") %>%
             tab_source_note(md("Source: Supreme Court Database"))
+        
+        # Explanation for this work can be found in the Justice.R doc
     })
 
 }

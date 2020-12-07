@@ -152,9 +152,18 @@ comparison_justice <- modern_justice %>%
                              "TMarshall", "WJBrennan",
                              "JPStevens", "RBGinsburg"))
 
+# I used a relevel here to have my table be output with the most
+# conservative Justices on top, and then the Liberal Justices after that
+# rather than being somewhat randomly distributed like they were at first.
+
+
 polarized <- stan_glm(direction ~ justice_name,
                       data = comparison_justice,
                       refresh = 0)
+
+# This is just going to give me output with the previously identified
+# 8 Justices. I figured it would be easier to run stan_glm again rather 
+# than filter the table from a stan with all of the Justices.
 
 tbl_regression(polarized, intercept = TRUE) %>% 
   as_gt() %>%
