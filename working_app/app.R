@@ -23,7 +23,7 @@ source('model_1.R')
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
-    "Supreme Court Over the Years",
+    "Supreme Court Decisions- Apolitical or Not?",
     tabPanel("A Historical Overview of SCOTUS Cases",
              h3("Case Salience"),
              p("Acting as background knowledge for my models, this page focuses
@@ -95,7 +95,9 @@ ui <- navbarPage(
               when it comes to predicting which way a Justice will lean. I took
               a closer look at specifically issues on the 1st amendment and came
               up with these results:"),
-            gt_output("model_table1"),
+            fluidPage(theme = shinytheme("cerulean"),
+                      fluidRow(
+                          column(5, gt_output("model_table1"), offset = 4))),
 
             p("In this instance, the intercept (or reference point) represents
               Justice Thomas. The Beta value here represents the relative 
