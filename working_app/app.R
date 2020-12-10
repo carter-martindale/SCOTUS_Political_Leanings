@@ -20,6 +20,10 @@ source('D_dataset.R')
 source('Justice.R')
 source('model_1.R')
 
+# I used source here to prevent me just dumping in all of the messy data 
+# cleaning and manipulating I did as a precursor to actually making the
+# shinyapp. 
+
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
@@ -98,6 +102,11 @@ ui <- navbarPage(
             fluidPage(theme = shinytheme("cerulean"),
                       fluidRow(
                           column(5, gt_output("model_table1"), offset = 4))),
+            
+            # I wanted to put the table in the middle of the page rather than 
+            # just off to the left side. I also didn't like how it appeared
+            # originally, so I used the column() function to determine how wide
+            # it would be and where it would appear on the page. 
 
             p("In this instance, the intercept (or reference point) represents
               Justice Thomas. The Beta value here represents the relative 
@@ -119,9 +128,17 @@ ui <- navbarPage(
             p("The central question in this model is the following: Can we 
               predict what type of cases the Supreme Court will choose? We will
               be drawing upon information from all of the petitions for
-              writ of Certiori (essentially a plea for the Supreme Court
-              to hear a case) that have been presented while Justice Roberts
+              writ of Certiori that have been presented while Justice Roberts
               has been Chief Justice."),
+            p("For reference, parties who are not satisfied with the decision
+              of a lower court may petition the Supreme Court to hear their case.
+             The primary means to petition the court for review is to ask it to
+              grant a writ of certiorari,  or an order from the Supreme Court to
+              to a lower court to send up the record of the case for review.
+              The Supreme Court is under no obligation to hear these cases, and 
+              four of the nine Justices must vote to accept such a petition."),
+            
+            
             p("First let's look at some tables. For my first model, I analyzed
               the percentage of petitions that were successful based on the
               nature of the case, which circuit court it came from, and what
@@ -168,13 +185,6 @@ ui <- navbarPage(
               or because there really isn't any significant relationship
               between the interaction of case origin and case type on the 
               success of a petition."),
-            
-            # Again, not all of the interaction terms are statistically 
-            # significant, so I won't go into each variable. But my model does 
-            # predict
-            # that U.S. Civil cases will have the highest percentage of successful
-            # petitions coming from the 8th, 9th, and 11th Circuits. Criminal
-            # cases are also predicted to do well from the 8th and 11th circuits."),
             
             p("Moving forward, I think the lack of more variables really hampers 
               my model. I think that future models could
@@ -241,7 +251,7 @@ ui <- navbarPage(
     tabPanel("About", 
              titlePanel("About"),
              h3("Project Background and Motivations"),
-             p("I essentially became a Supreme Court case law nerd my senior 
+             p("I became a Supreme Court case law nerd my senior 
              year of high school when I participated in 'We The People', 
              essentially a constitutional history and law competition for 
              students. I wanted to undertake this project as an attempt to draw
@@ -446,7 +456,14 @@ server <- function(input, output, session) {
     
     output$model_table1 <- render_gt({
         
-        tbl_regression(fit_obj, intercept = TRUE) %>%
+        tbl_regression(fit_obj, intercept = TRUE,
+                       estimate_fun = function(polarized)
+                           style_sigfig(polarized, digits = 3)) %>%
+            
+            # Snagged this code from the class slack- I wanted to have more than
+            # just one decimal place displayed, and this allows me to choose how
+            # many decimal places to output in the table. 
+            
             as_gt() %>% 
             tab_header(title = "Logistic Regression of Justice Vote Direction", 
                        subtitle = "Looking at 1st Amendment Cases") %>%
@@ -456,7 +473,9 @@ server <- function(input, output, session) {
     })
     
     output$model_table2 <- render_gt({
-        tbl_regression(roberts_new_intercept, intercept = TRUE) %>%
+        tbl_regression(roberts_new_intercept, intercept = TRUE,
+                       estimate_fun = function(polarized)
+                           style_sigfig(polarized, digits = 3)) %>%
             as_gt() %>%
             tab_header(title = "Logistic Regression of Granted Petitions for Writ of Certiori",
                        subtitle = "The Effect of case type, origin, and year on petition success") %>%
@@ -468,7 +487,9 @@ server <- function(input, output, session) {
     output$model_table3 <- render_gt({
         tbl_regression(roberts_model_2, intercept = TRUE,
                        include = c("(Intercept)", "nature_of_proceeding",
-                                   "district")) %>% 
+                                   "district"),
+                       estimate_fun = function(polarized)
+                           style_sigfig(polarized, digits = 3)) %>% 
             as_gt() %>% 
             tab_header(title = "Logistic Regression of Granted Petitions for Writ of Certiori",
                        subtitle = "The Effect of case type and origin interaction on petition success") %>%
@@ -477,7 +498,9 @@ server <- function(input, output, session) {
     
     output$model_table4 <- render_gt({
         tbl_regression(roberts_model_2, intercept = TRUE,
-                       include = c("nature_of_proceeding:district")) %>% 
+                       include = c("nature_of_proceeding:district"),
+                       estimate_fun = function(polarized)
+                           style_sigfig(polarized, digits = 3)) %>% 
             as_gt() %>% 
             tab_header(title = "Logistic Regression of Granted Petitions for Writ of Certiori",
                        subtitle = "The Effect of case type and origin interaction on petition success") %>%
@@ -531,7 +554,9 @@ server <- function(input, output, session) {
     })
     
     output$model_table_greats <- render_gt({
-        tbl_regression(polarized, intercept = TRUE) %>% 
+        tbl_regression(polarized, intercept = TRUE,
+                       estimate_fun = function(polarized)
+                           style_sigfig(polarized, digits = 3)) %>% 
             as_gt() %>%
             tab_header(title = "Linear Regression of Justice Vote Direction",
                        subtitle = "A selection of the most conversative and liberal justices") %>%
